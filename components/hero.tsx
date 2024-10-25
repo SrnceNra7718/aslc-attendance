@@ -1,7 +1,7 @@
 export default function Header() {
   return (
     <div className="flex flex-col border">
-      <div className="flex h-[480px] w-[720px] flex-col items-center justify-center border-[1px] border-foreground bg-card py-6 text-foreground">
+      <div className="flex h-[397px] w-[720px] flex-col items-center justify-center border-[1px] border-foreground bg-card py-6 text-foreground">
         <div>
           <h1 className="text-size flex w-full items-center justify-center text-6xl font-extrabold">
             Attendance
