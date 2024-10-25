@@ -13,7 +13,7 @@ export default function Header() {
     <div className="flex flex-col">
       <div
         id=""
-        className="max-sm:scale-25 flex h-[397px] w-[720px] flex-col items-center justify-center border-[1px] border-foreground bg-card py-6 text-foreground"
+        className="max-sm:scale-25 flex h-[397px] w-[720px] flex-col items-center justify-center border-[1px] border-foreground bg-card py-6 text-foreground sm:scale-75 md:scale-90 lg:scale-100"
       >
         <div>
           <h1 className="text-size flex w-full items-center justify-center text-5xl font-extrabold">
