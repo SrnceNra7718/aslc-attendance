@@ -10,8 +10,11 @@ export default function Header() {
   const totalValue = dValue + hValue;
 
   return (
-    <div className="flex flex-col border">
-      <div className="flex h-[397px] w-[720px] flex-col items-center justify-center border-[1px] border-foreground bg-card py-6 text-foreground">
+    <div className="flex flex-col">
+      <div
+        id=""
+        className="max-sm:scale-25 flex h-[397px] w-[720px] flex-col items-center justify-center border-[1px] border-foreground bg-card py-6 text-foreground"
+      >
         <div>
           <h1 className="text-size flex w-full items-center justify-center text-5xl font-extrabold">
             Attendance
