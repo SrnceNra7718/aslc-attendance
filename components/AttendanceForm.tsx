@@ -1,10 +1,76 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AttendanceForm() {
   // State variables for the input values, allowing null as a valid type
   const [dValue, setDValue] = useState<number | null>(0);
   const [hValue, setHValue] = useState<number | null>(0);
+
+  // State to hold the meeting type and formatted date
+  const [meetingInfo, setMeetingInfo] = useState<string>("");
+
+  // Get the current date (you can replace this line with actual current date logic)
+  const today = new Date(); // Example date
+  console.log("today = " + today);
+
+  const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+  console.log(today.getDay());
+
+  useEffect(() => {
+    // Function to calculate the next Wednesday or Saturday date
+    const getNextMeetingDate = (targetDay: number) => {
+      const daysUntilTarget = (targetDay + 7 - currentDay) % 7 || 7;
+      console.log("targetDay = " + targetDay);
+      console.log("daysUntilTarget = " + daysUntilTarget);
+
+      const nextMeetingDate = new Date(today);
+      nextMeetingDate.setDate(today.getDate() + daysUntilTarget);
+      console.log("nextMeetingDate = " + nextMeetingDate);
+
+      return nextMeetingDate;
+    };
+
+    // Function to get the formatted date
+    const formatDate = (date: Date) => {
+      const month = date.toLocaleString("default", { month: "long" });
+      const day = date.getDate();
+      const year = date.getFullYear();
+      return `– ${month} ${day}, ${year}`;
+    };
+
+    // Function to determine the meeting info
+    const getMeetingInfo = () => {
+      let nextMeetingDate;
+      let meetingType = "";
+
+      // Check if today is Wednesday or Saturday
+      if (currentDay === 3) {
+        // Today is Wednesday
+        meetingType = "Midweek Meeting";
+        nextMeetingDate = today; // Use today's date
+      } else if (currentDay === 6) {
+        // Today is Saturday
+        meetingType = "Weekend Meeting";
+        nextMeetingDate = today; // Use today's date
+      } else if (currentDay >= 1 && currentDay <= 5) {
+        // If today is Monday to Friday, find the next Wednesday
+        meetingType = "Midweek Meeting";
+        nextMeetingDate = getNextMeetingDate(3); // 3 = Wednesday
+      } else {
+        // If today is Sunday, find the next Saturday
+        meetingType = "Weekend Meeting";
+        nextMeetingDate = getNextMeetingDate(6); // 6 = Saturday
+      }
+
+      const formattedDate = formatDate(nextMeetingDate);
+
+      // Update the state with the meeting type and formatted date
+      setMeetingInfo(`${meetingType} ${formattedDate}`);
+    };
+
+    // Call the function on component mount
+    getMeetingInfo();
+  }, [currentDay, today]);
 
   // Function to handle the sum
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
@@ -38,7 +104,8 @@ export default function AttendanceForm() {
           Attendance
         </h1>
         <h3 className="-mt-2 flex w-full items-center justify-center text-[4vw] font-medium">
-          Midweek Meeting – July 10, 2024
+          {meetingInfo}
+          {/* This will display the next "Midweek Meeting (Wednesday)" or "Weekend Meeting (Saturday)" with the correct date */}
         </h3>
       </div>
       <div className="-m-2 flex flex-col items-center justify-center py-3 text-[7vw]">
