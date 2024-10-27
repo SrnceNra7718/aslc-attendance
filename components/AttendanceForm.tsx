@@ -43,7 +43,7 @@ export default function AttendanceForm() {
       </div>
       <div className="-m-2 flex flex-col items-center justify-center py-3 text-[7vw]">
         {/* Input for D */}
-        <div className="-m-2 flex flex-row">
+        <div className="-m-2 flex flex-row pl-5">
           <h2 className="-my-2 flex items-center">D = </h2>
           <input
             type="number"
@@ -54,7 +54,7 @@ export default function AttendanceForm() {
           />
         </div>
         {/* Input for H */}
-        <div className="flex flex-row pt-3">
+        <div className="flex flex-row pl-5 pt-3">
           <h2 className="flex items-center">H = </h2>
           <input
             type="number"
@@ -66,7 +66,7 @@ export default function AttendanceForm() {
         </div>
         <span className="h-1 w-[60vw] items-center bg-foreground" />
         {/* Total display aligned to the right */}
-        <div className="-m-2 flex w-full flex-row items-center justify-center py-3">
+        <div className="-m-2 -ml-[12vw] flex w-full flex-row items-center justify-center py-3 pl-5">
           <h2>Total = </h2>
           <h2 className="ml-5 w-[16vw]">{totalValue}</h2>
         </div>
