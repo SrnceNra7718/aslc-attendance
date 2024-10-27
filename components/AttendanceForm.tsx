@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export default function Header() {
+export default function AttendanceForm() {
   // State variables for the input values, allowing null as a valid type
   const [dValue, setDValue] = useState<number | null>(0);
   const [hValue, setHValue] = useState<number | null>(0);
@@ -30,7 +30,7 @@ export default function Header() {
 
   return (
     <div
-      id="from"
+      id="AttendanceForm"
       className="flex aspect-[16/9] max-h-[90vw] w-screen max-w-[100vw] flex-col items-center justify-center border-[1px] border-foreground bg-card p-6 text-foreground"
     >
       <div>

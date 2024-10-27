@@ -1,9 +1,9 @@
-import Hero from "@/components/hero";
+import AttendanceForm from "@/components/AttendanceForm";
 
 export default async function Index() {
   return (
     <>
-      <Hero />
+      <AttendanceForm />
     </>
   );
 }
