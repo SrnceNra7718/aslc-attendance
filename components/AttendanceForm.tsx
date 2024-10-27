@@ -49,7 +49,7 @@ export default function AttendanceForm() {
             type="number"
             value={dValue ?? ""} // Show empty input when value is null
             onChange={handleInputChange(setDValue)}
-            className="ml-5 w-28 appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
+            className="ml-5 w-[16vw] appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
             min="0"
           />
         </div>
@@ -60,7 +60,7 @@ export default function AttendanceForm() {
             type="number"
             value={hValue ?? ""} // Show empty input when value is null
             onChange={handleInputChange(setHValue)}
-            className="ml-5 w-28 appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
+            className="ml-5 w-[16vw] appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
             min="0"
           />
         </div>
@@ -68,7 +68,7 @@ export default function AttendanceForm() {
         {/* Total display aligned to the right */}
         <div className="-m-2 flex w-full flex-row items-center justify-center py-3">
           <h2>Total = </h2>
-          <h2 className="ml-5 w-40">{totalValue}</h2>
+          <h2 className="ml-5 w-[16vw]">{totalValue}</h2>
         </div>
       </div>
     </div>
