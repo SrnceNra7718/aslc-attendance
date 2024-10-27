@@ -12,21 +12,21 @@ export default function Header() {
   return (
     <div className="flex flex-col">
       <div
-        id=""
-        className="max-sm:scale-25 flex h-[397px] w-[720px] flex-col items-center justify-center border-[1px] border-foreground bg-card py-6 text-foreground sm:scale-75 md:scale-90 lg:scale-100"
+        id="from"
+        className="flex aspect-[16/9] max-h-[90vw] w-screen max-w-[100vw] flex-col items-center justify-center border-[1px] border-foreground bg-card p-6 text-foreground"
       >
         <div>
-          <h1 className="text-size flex w-full items-center justify-center text-5xl font-extrabold">
+          <h1 className="text-size flex items-center justify-center text-[6vw] font-extrabold">
             Attendance
           </h1>
-          <h3 className="flex w-full items-center justify-center pt-2 text-3xl font-medium">
+          <h3 className="-mt-2 flex w-full items-center justify-center text-[4vw] font-medium">
             Midweek Meeting – July 10, 2024
           </h3>
         </div>
-        <div className="flex flex-col items-center justify-center py-3 text-5xl">
+        <div className="-m-2 flex flex-col items-center justify-center py-3 text-[7vw]">
           {/* Input for D */}
-          <div className="flex flex-row">
-            <h2 className="flex items-center">D = </h2>
+          <div className="-m-2 flex flex-row">
+            <h2 className="-my-2 flex items-center">D = </h2>
             <input
               type="number"
               value={dValue}
@@ -43,13 +43,13 @@ export default function Header() {
               onChange={(e) => setHValue(Number(e.target.value))}
               className="ml-5 w-28 appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
             />
+          </div>{" "}
+          <span className="h-1 w-[60vw] items-center bg-foreground" />
+          {/* Total display aligned to the right */}
+          <div className="-m-2 flex w-full flex-row items-center justify-center py-3">
+            <h2>Total = </h2>
+            <h2 className="ml-5 w-40">{totalValue}</h2>
           </div>
-        </div>
-        <span className="h-1 w-[80%] items-center bg-foreground" />
-        {/* Total display aligned to the right */}
-        <div className="flex w-full flex-row items-center justify-start py-3 text-5xl">
-          <h2 className="pl-[11rem]">Total = </h2>
-          <h2 className="ml-5 w-36">{totalValue}</h2>
         </div>
       </div>
     </div>

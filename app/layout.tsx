@@ -28,17 +28,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <main className="flex min-h-screen flex-col items-center overflow-x-hidden">
-            <div className="flex w-full flex-1 flex-col items-center gap-20">
+            <div className="flex w-full flex-1 flex-col items-center">
               <nav className="flex h-16 w-full justify-center border-b border-b-foreground">
                 <div className="flex w-full max-w-5xl items-center justify-end gap-8 p-3 px-5 text-sm">
                   <ThemeSwitcher />
-                  {/* <HeaderAuth /> */}
                 </div>
               </nav>
 
-              <div className="flex max-w-5xl flex-col gap-20 p-5">
-                {children}
-              </div>
+              <div className="flex flex-col">{children}</div>
 
               <footer className="mx-auto flex w-full items-center justify-center gap-8 border-t border-t-foreground py-16 text-center text-xs">
                 <p>
