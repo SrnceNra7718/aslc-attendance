@@ -14,12 +14,13 @@ export default function AttendanceForm() {
   // State to hold the meeting type and formatted date
   const [meetingInfo, setMeetingInfo] = useState<string>("");
   const [meetingType, setMeetingType] = useState<string>("");
+  const [nextMeetingDate, setNextMeetingDate] = useState<string>(""); // State to store the next meeting date
 
   // Function to handle the sum
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
   // Get the current date (you can replace this line with actual current date logic)
-  const today = new Date("November 2, 2024 23:15:30"); // Example date "November 2, 2024 23:15:30"
+  const today = new Date("November 7, 2024 23:15:30"); // Example date "November 2, 2024 23:15:30"
   console.log("today = " + today);
 
   const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
@@ -72,10 +73,12 @@ export default function AttendanceForm() {
       }
 
       const formattedDate = formatDate(nextMeetingDate);
+      const numFormDate = formatDateMMDDYYYY(nextMeetingDate);
 
       // Update the state with the meeting type and formatted date
       setMeetingType(type);
       setMeetingInfo(`${type} Meeting ${formattedDate}`);
+      setNextMeetingDate(numFormDate); // Save the next meeting date
     };
 
     // Call the function on component mount
@@ -111,16 +114,15 @@ export default function AttendanceForm() {
 
   // Function to handle submission and alert the values
   const handleSubmit = async () => {
-    const formattedDate = formatDateMMDDYYYY(today);
+    const formattedDate = nextMeetingDate; // Use nextMeetingDate
     const hearing = dValue || 0;
     const deaf = hValue || 0;
     const total = totalValue;
 
-    // Check if the attendance for this date already exists using the new function
+    // Check if the attendance for this date already exists
     const existingAttendance = await checkExistingAttendance(formattedDate);
 
     if (existingAttendance === null) {
-      // Handle error case (if there was a problem querying the database)
       console.error("Error checking for existing attendance.");
       return;
     }
@@ -133,55 +135,63 @@ export default function AttendanceForm() {
       await updateAttendance(formattedDate, hearing, deaf, total, meetingType);
     }
   };
-
-  // Automatically call handleSubmit when totalValue changes
-  useEffect(() => {
-    handleSubmit();
-  }, [totalValue]); // Trigger whenever totalValue changes
+  // // Automatically call handleSubmit when totalValue changes
+  // useEffect(() => {
+  //   handleSubmit();
+  // }, [totalValue]); // Trigger whenever totalValue changes
 
   return (
-    <div
-      id="AttendanceForm"
-      className="flex aspect-[16/9] max-h-[90vw] w-screen max-w-[100vw] flex-col items-center justify-center border-[1px] border-foreground bg-card p-6 text-foreground"
-    >
-      <div>
-        <h1 className="text-size flex items-center justify-center text-[6vw] font-extrabold">
-          Attendance
-        </h1>
-        <h3 className="-mt-2 flex w-full items-center justify-center text-[4vw] font-medium">
-          {meetingInfo}
-        </h3>
+    <div className="container">
+      <div
+        id="AttendanceForm"
+        className="flex aspect-[16/9] max-h-[90vw] w-screen max-w-[100vw] flex-col items-center justify-center border-[1px] border-foreground bg-card p-6 text-foreground"
+      >
+        <div>
+          <h1 className="text-size flex items-center justify-center text-[6vw] font-extrabold">
+            Attendance
+          </h1>
+          <h3 className="-mt-2 flex w-full items-center justify-center text-[4vw] font-medium">
+            {meetingInfo}
+          </h3>
+        </div>
+        <div className="-m-2 flex flex-col items-center justify-center py-3 text-[7vw]">
+          {/* Input for D */}
+          <div className="-m-2 flex flex-row pl-5">
+            <h2 className="-my-2 flex items-center">D = </h2>
+            <input
+              type="number"
+              value={dValue ?? ""} // Show empty input when value is null
+              onChange={handleInputChange(setDValue)}
+              className="ml-5 w-[16vw] appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
+              min="0"
+            />
+          </div>
+          {/* Input for H */}
+          <div className="flex flex-row pl-5 pt-3">
+            <h2 className="flex items-center">H = </h2>
+            <input
+              type="number"
+              value={hValue ?? ""} // Show empty input when value is null
+              onChange={handleInputChange(setHValue)}
+              className="ml-5 w-[16vw] appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
+              min="0"
+            />
+          </div>
+          <span className="h-1 w-[60vw] items-center bg-foreground" />
+          {/* Total display aligned to the right */}
+          <div className="-m-2 -ml-[12vw] flex w-full flex-row items-center justify-center py-3 pl-5">
+            <h2>Total = </h2>
+            <h2 className="ml-5 w-[16vw]">{totalValue}</h2>
+          </div>
+        </div>
       </div>
-      <div className="-m-2 flex flex-col items-center justify-center py-3 text-[7vw]">
-        {/* Input for D */}
-        <div className="-m-2 flex flex-row pl-5">
-          <h2 className="-my-2 flex items-center">D = </h2>
-          <input
-            type="number"
-            value={dValue ?? ""} // Show empty input when value is null
-            onChange={handleInputChange(setDValue)}
-            className="ml-5 w-[16vw] appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
-            min="0"
-          />
-        </div>
-        {/* Input for H */}
-        <div className="flex flex-row pl-5 pt-3">
-          <h2 className="flex items-center">H = </h2>
-          <input
-            type="number"
-            value={hValue ?? ""} // Show empty input when value is null
-            onChange={handleInputChange(setHValue)}
-            className="ml-5 w-[16vw] appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
-            min="0"
-          />
-        </div>
-        <span className="h-1 w-[60vw] items-center bg-foreground" />
-        {/* Total display aligned to the right */}
-        <div className="-m-2 -ml-[12vw] flex w-full flex-row items-center justify-center py-3 pl-5">
-          <h2>Total = </h2>
-          <h2 className="ml-5 w-[16vw]">{totalValue}</h2>
-        </div>
-      </div>
+      {/* Submit button to handle the form submission */}
+      <button
+        onClick={handleSubmit}
+        className="mt-4 flex justify-self-end rounded-lg bg-blue-500 p-2 text-center text-white"
+      >
+        Save
+      </button>
     </div>
   );
 }
