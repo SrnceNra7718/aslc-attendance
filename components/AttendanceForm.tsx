@@ -26,7 +26,7 @@ export default function AttendanceForm() {
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
   // Get the current date (you can replace this line with actual current date logic)
-  const today = new Date(); // Example date "November 2, 2024 23:15:30"
+  const today = new Date("January 13, 2024 23:15:30"); // Example date "November 2, 2024 23:15:30"
   console.log("today = " + today);
 
   const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
@@ -150,9 +150,20 @@ export default function AttendanceForm() {
   // Function to handle submission and alert the values
   const handleSubmit = async () => {
     const formattedDate = nextMeetingDate; // Use nextMeetingDate
-    const hearing = hValue || 0; // Assign hValue to hearing (corrected)
-    const deaf = dValue || 0; // Assign dValue to deaf (corrected)
+    const hearing = hValue || 0; // Assign hValue to hearing
+    const deaf = dValue || 0; // Assign dValue to deaf
     const total = totalValue;
+
+    // Validate that the values have changed compared to the original values
+    const hasChanges =
+      hearing !== originalHValue || // Check if hearing count has changed
+      deaf !== originalDValue; // Check if deaf count has changed
+
+    // If no changes detected, log and abort submission
+    if (!hasChanges) {
+      console.log("No changes detected. Submission aborted.");
+      return; // Abort submission if no changes
+    }
 
     // Check if the attendance for this date already exists
     if (existingAttendance === null) {
@@ -167,9 +178,11 @@ export default function AttendanceForm() {
       // Update existing record if it exists
       await updateAttendance(formattedDate, hearing, deaf, total, meetingType);
     }
-    setOriginalDValue(dValue);
-    setOriginalHValue(hValue);
-    setIsEditable(!isEditable);
+
+    // Update original values after submission
+    setOriginalDValue(deaf);
+    setOriginalHValue(hearing);
+    setIsEditable(false); // Exit edit mode after submission
   };
 
   // Function to handle canceling the edit and revert the values
