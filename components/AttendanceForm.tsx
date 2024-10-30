@@ -9,8 +9,8 @@ import CustomButton from "./ui/CustomButton";
 
 export default function AttendanceForm() {
   // State variables for the input values, allowing null as a valid type
-  const [dValue, setDValue] = useState<number | null>(0);
-  const [hValue, setHValue] = useState<number | null>(0);
+  const [dValue, setDValue] = useState<number | null>(null);
+  const [hValue, setHValue] = useState<number | null>(null);
 
   const [originalDValue, setOriginalDValue] = useState<number | null>(0);
   const [originalHValue, setOriginalHValue] = useState<number | null>(0);
@@ -26,7 +26,7 @@ export default function AttendanceForm() {
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
   // Get the current date (you can replace this line with actual current date logic)
-  const today = new Date("January 13, 2024 23:15:30"); // Example date "November 2, 2024 23:15:30"
+  const today = new Date("January 5, 2024 23:15:30"); // Example date "November 2, 2024 23:15:30"
   console.log("today = " + today);
 
   const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
@@ -108,10 +108,10 @@ export default function AttendanceForm() {
           setOriginalHValue(hearing);
         } else {
           // No existing attendance, set values to 0
-          setDValue(0);
-          setHValue(0);
-          setOriginalDValue(0);
-          setOriginalHValue(0);
+          setDValue(null);
+          setHValue(null);
+          setOriginalDValue(null);
+          setOriginalHValue(null);
         }
         setExistingAttendance(attendance);
       }
@@ -130,11 +130,15 @@ export default function AttendanceForm() {
       if (value === "") {
         setValue(null);
       } else {
-        const numberValue = Number(value);
+        // Remove any initial zeroes if the user is typing a new number
+        const sanitizedValue = value.replace(/^0+/, "") || "0";
+        const numberValue = Number(sanitizedValue);
 
         // Only allow non-negative numbers
         if (numberValue >= 0) {
           setValue(numberValue);
+        } else {
+          setValue(0);
         }
       }
     };
@@ -155,9 +159,7 @@ export default function AttendanceForm() {
     const total = totalValue;
 
     // Validate that the values have changed compared to the original values
-    const hasChanges =
-      hearing !== originalHValue || // Check if hearing count has changed
-      deaf !== originalDValue; // Check if deaf count has changed
+    const hasChanges = hearing !== originalHValue || deaf !== originalDValue;
 
     // If no changes detected, log and abort submission
     if (!hasChanges) {
@@ -165,26 +167,49 @@ export default function AttendanceForm() {
       return; // Abort submission if no changes
     }
 
-    // Check if the attendance for this date already exists
+    // Check if attendance for this date already exists
     if (existingAttendance === null) {
       console.error("Error checking for existing attendance.");
       return;
     }
 
-    if (existingAttendance.length === 0) {
-      // Insert new record if it doesn't exist
-      await insertAttendance(formattedDate, hearing, deaf, total, meetingType);
-    } else {
-      // Update existing record if it exists
-      await updateAttendance(formattedDate, hearing, deaf, total, meetingType);
+    // Determine if there's an existing record with the same date
+    const existingRecord = existingAttendance.find(
+      (record: { date_mm_dd_yyyy: string }) =>
+        record.date_mm_dd_yyyy === formattedDate,
+    );
+
+    try {
+      if (existingRecord) {
+        // Update existing record if date matches
+        await updateAttendance(
+          formattedDate,
+          hearing,
+          deaf,
+          total,
+          meetingType,
+        );
+        console.log("Attendance updated successfully.");
+      } else {
+        // Insert new record if date does not match
+        await insertAttendance(
+          formattedDate,
+          hearing,
+          deaf,
+          total,
+          meetingType,
+        );
+        console.log("New attendance record inserted successfully.");
+      }
+
+      // Update original values after submission
+      setOriginalDValue(deaf);
+      setOriginalHValue(hearing);
+      setIsEditable(false); // Exit edit mode after submission
+    } catch (error) {
+      console.error("Error during attendance submission:", error);
     }
-
-    // Update original values after submission
-    setOriginalDValue(deaf);
-    setOriginalHValue(hearing);
-    setIsEditable(false); // Exit edit mode after submission
   };
-
   // Function to handle canceling the edit and revert the values
   const handleCancel = () => {
     setIsHovered(true);
@@ -223,6 +248,7 @@ export default function AttendanceForm() {
               className="ml-5 w-[16vw] appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
               min="0"
               disabled={!isEditable} // Disable input if not editable
+              placeholder="0"
             />
           </div>
           {/* Input for H */}
@@ -235,6 +261,7 @@ export default function AttendanceForm() {
               className="ml-5 w-[16vw] appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
               min="0"
               disabled={!isEditable} // Disable input if not editable
+              placeholder="0"
             />
           </div>
           <span className="h-1 w-[60vw] items-center bg-foreground" />
