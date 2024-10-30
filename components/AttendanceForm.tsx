@@ -1,4 +1,9 @@
 "use client";
+import {
+  checkExistingAttendance,
+  insertAttendance,
+  updateAttendance,
+} from "@/utils/supabase/database";
 import { useState, useEffect } from "react";
 
 export default function AttendanceForm() {
@@ -8,9 +13,11 @@ export default function AttendanceForm() {
 
   // State to hold the meeting type and formatted date
   const [meetingInfo, setMeetingInfo] = useState<string>("");
+  // Function to handle the sum
+  const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
   // Get the current date (you can replace this line with actual current date logic)
-  const today = new Date(); // Example date
+  const today = new Date(); // Example date "November 2, 2024 23:15:30"
   console.log("today = " + today);
 
   const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
@@ -72,9 +79,6 @@ export default function AttendanceForm() {
     getMeetingInfo();
   }, [currentDay, today]);
 
-  // Function to handle the sum
-  const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
-
   // Function to handle input change and prevent negative values
   const handleInputChange =
     (setValue: (value: number | null) => void) =>
@@ -94,6 +98,46 @@ export default function AttendanceForm() {
       }
     };
 
+  // Function to format the date as mm_dd_yyyy
+  const formatDateMMDDYYYY = (date: Date) => {
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Get the month (0-based, so add 1)
+    const day = String(date.getDate()).padStart(2, "0"); // Get the day
+    const year = date.getFullYear(); // Get the year
+    return `${month}_${day}_${year}`; // Return as mm_dd_yyyy
+  };
+
+  // Function to handle submission and alert the values
+  const handleSubmit = async () => {
+    const formattedDate = formatDateMMDDYYYY(today);
+    const meetingType = "";
+    const hearing = dValue || 0;
+    const deaf = hValue || 0;
+    const total = totalValue;
+
+    // Check if the attendance for this date already exists in the database
+    // Check if the attendance for this date already exists using the new function
+    const existingAttendance = await checkExistingAttendance(formattedDate);
+
+    if (existingAttendance === null) {
+      // Handle error case (if there was a problem querying the database)
+      console.error("Error checking for existing attendance.");
+      return;
+    }
+
+    if (existingAttendance.length === 0) {
+      // Insert new record if it doesn't exist
+      await insertAttendance(formattedDate, hearing, deaf, total);
+    } else {
+      // Update existing record if it exists
+      await updateAttendance(formattedDate, hearing, deaf, total);
+    }
+  };
+
+  // Automatically call handleSubmit when totalValue changes
+  useEffect(() => {
+    handleSubmit();
+  }, [totalValue]); // Trigger whenever totalValue changes
+
   return (
     <div
       id="AttendanceForm"
@@ -105,7 +149,6 @@ export default function AttendanceForm() {
         </h1>
         <h3 className="-mt-2 flex w-full items-center justify-center text-[4vw] font-medium">
           {meetingInfo}
-          {/* This will display the next "Midweek Meeting (Wednesday)" or "Weekend Meeting (Saturday)" with the correct date */}
         </h3>
       </div>
       <div className="-m-2 flex flex-col items-center justify-center py-3 text-[7vw]">
