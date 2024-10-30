@@ -5,7 +5,7 @@ import {
   updateAttendance,
 } from "@/utils/supabase/database";
 import { useState, useEffect } from "react";
-import { Button } from "@nextui-org/button";
+import CustomButton from "./CustomButton";
 
 export default function AttendanceForm() {
   // State variables for the input values, allowing null as a valid type
@@ -150,8 +150,8 @@ export default function AttendanceForm() {
   // Function to handle submission and alert the values
   const handleSubmit = async () => {
     const formattedDate = nextMeetingDate; // Use nextMeetingDate
-    const hearing = dValue || 0;
-    const deaf = hValue || 0;
+    const hearing = hValue || 0; // Assign hValue to hearing (corrected)
+    const deaf = dValue || 0; // Assign dValue to deaf (corrected)
     const total = totalValue;
 
     // Check if the attendance for this date already exists
@@ -174,6 +174,7 @@ export default function AttendanceForm() {
 
   // Function to handle canceling the edit and revert the values
   const handleCancel = () => {
+    setIsHovered(true);
     setDValue(originalDValue); // Revert to original D value
     setHValue(originalHValue); // Revert to original H value
     setIsEditable(false); // Disable editing
@@ -200,7 +201,7 @@ export default function AttendanceForm() {
         </div>
         <div className="-m-2 flex flex-col items-center justify-center py-3 text-[7vw]">
           {/* Input for D */}
-          <div className="-m-2 flex flex-row pl-10">
+          <div className="-m-2 flex flex-row pl-[10vw]">
             <h2 className="-my-2 flex items-center">D = </h2>
             <input
               type="number"
@@ -212,7 +213,7 @@ export default function AttendanceForm() {
             />
           </div>
           {/* Input for H */}
-          <div className="flex flex-row pl-10 pt-3">
+          <div className="flex flex-row pl-[10vw] pt-3">
             <h2 className="flex items-center">H = </h2>
             <input
               type="number"
@@ -225,7 +226,7 @@ export default function AttendanceForm() {
           </div>
           <span className="h-1 w-[60vw] items-center bg-foreground" />
           {/* Total display aligned to the right */}
-          <div className="-m-2 -ml-[12vw] flex w-full flex-row items-center justify-center py-3 pl-10">
+          <div className="-m-2 -ml-[12vw] flex w-full flex-row items-center justify-center py-3 pl-[10vw]">
             <h2>Total = </h2>
             <h2 className="ml-5 w-[16vw]">{totalValue}</h2>
           </div>
@@ -234,26 +235,25 @@ export default function AttendanceForm() {
         {isHovered &&
           (isEditable ? (
             <div className="absolute right-2 top-20 flex gap-2">
-              <Button
-                className="rounded bg-red-500 p-2 text-white"
-                onClick={handleCancel} // Toggle edit mode
-              >
-                Cancel
-              </Button>
-              <Button
-                className="rounded bg-blue-500 p-2 text-white"
+              <CustomButton
+                iconType="ban"
+                title="Cancel"
+                onClick={handleCancel}
+              />
+              <CustomButton
+                iconType="save"
+                title="Save"
                 onClick={handleSubmit}
-              >
-                Save
-              </Button>
+              />
             </div>
           ) : (
-            <Button
-              className="absolute right-2 top-20 rounded bg-blue-500 p-2 text-white"
-              onClick={() => setIsEditable(!isEditable)} // Toggle edit mode
-            >
-              Edit
-            </Button>
+            <div className="absolute right-2 top-20 flex">
+              <CustomButton
+                iconType="pencil"
+                title="Edit"
+                onClick={() => setIsEditable(!isEditable)}
+              />
+            </div>
           ))}
       </div>
     </div>
