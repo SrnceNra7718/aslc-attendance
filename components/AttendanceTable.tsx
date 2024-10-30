@@ -32,7 +32,7 @@ const fetchLatestAttendance = async () => {
   }
 };
 
-const AttendanceComponent = () => {
+const AttendanceTable = () => {
   const [attendanceData, setAttendanceData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -77,4 +77,4 @@ const AttendanceComponent = () => {
   );
 };
 
-export default AttendanceComponent;
+export default AttendanceTable;
