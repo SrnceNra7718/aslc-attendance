@@ -2,6 +2,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
+import { Providers } from "./providers";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -35,7 +36,9 @@ export default function RootLayout({
                 </div>
               </nav>
 
-              <div className="flex flex-col">{children}</div>
+              <div className="flex flex-col">
+                <Providers>{children}</Providers>
+              </div>
 
               <footer className="mx-auto flex w-full items-center justify-center gap-8 border-t border-t-foreground py-16 text-center text-xs">
                 <p>

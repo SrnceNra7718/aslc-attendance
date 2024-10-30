@@ -5,6 +5,7 @@ import {
   updateAttendance,
 } from "@/utils/supabase/database";
 import { useState, useEffect } from "react";
+import { Button } from "@nextui-org/button";
 
 export default function AttendanceForm() {
   // State variables for the input values, allowing null as a valid type
@@ -233,26 +234,26 @@ export default function AttendanceForm() {
         {isHovered &&
           (isEditable ? (
             <div className="absolute right-2 top-20 flex gap-2">
-              <button
+              <Button
                 className="rounded bg-red-500 p-2 text-white"
                 onClick={handleCancel} // Toggle edit mode
               >
-                cancel
-              </button>
-              <button
+                Cancel
+              </Button>
+              <Button
                 className="rounded bg-blue-500 p-2 text-white"
                 onClick={handleSubmit}
               >
                 Save
-              </button>
+              </Button>
             </div>
           ) : (
-            <button
+            <Button
               className="absolute right-2 top-20 rounded bg-blue-500 p-2 text-white"
               onClick={() => setIsEditable(!isEditable)} // Toggle edit mode
             >
               Edit
-            </button>
+            </Button>
           ))}
       </div>
     </div>
