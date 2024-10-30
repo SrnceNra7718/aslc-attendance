@@ -5,7 +5,7 @@ import {
   updateAttendance,
 } from "@/utils/supabase/database";
 import { useState, useEffect } from "react";
-import CustomButton from "./CustomButton";
+import CustomButton from "./ui/CustomButton";
 
 export default function AttendanceForm() {
   // State variables for the input values, allowing null as a valid type
