@@ -27,24 +27,28 @@ export const checkExistingAttendance = async (formattedDate: string) => {
  * @param hearing The number of hearing attendees.
  * @param deaf The number of deaf attendees.
  * @param total The total attendees.
+ * @param meetingType The type of meeting (Midweek or Weekend).
  */
 export const insertAttendance = async (
   formattedDate: string,
   hearing: number,
   deaf: number,
   total: number,
+  meetingType: string,
 ) => {
-  const { data, error } = await supabase
-    .from("attendance")
-    .insert([{ date_mm_dd_yyyy: formattedDate, hearing, deaf, total }])
-    .select();
+  const { error } = await supabase.from("attendance").insert([
+    {
+      date_mm_dd_yyyy: formattedDate,
+      hearing: hearing,
+      deaf: deaf,
+      total: total,
+      meeting_type: meetingType,
+    },
+  ]);
 
   if (error) {
     console.error("Insert Error: ", error.message);
-    return null;
   }
-
-  return data;
 };
 
 /**
@@ -53,23 +57,26 @@ export const insertAttendance = async (
  * @param hearing The number of hearing attendees.
  * @param deaf The number of deaf attendees.
  * @param total The total attendees.
+ * @param meetingType The type of meeting (Midweek or Weekend).
  */
 export const updateAttendance = async (
   formattedDate: string,
   hearing: number,
   deaf: number,
   total: number,
+  meetingType: string,
 ) => {
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("attendance")
-    .update({ hearing, deaf, total })
-    .eq("date_mm_dd_yyyy", formattedDate)
-    .select();
+    .update({
+      hearing: hearing,
+      deaf: deaf,
+      total: total,
+      meeting_type: meetingType,
+    })
+    .eq("date_mm_dd_yyyy", formattedDate);
 
   if (error) {
     console.error("Update Error: ", error.message);
-    return null;
   }
-
-  return data;
 };

@@ -13,11 +13,13 @@ export default function AttendanceForm() {
 
   // State to hold the meeting type and formatted date
   const [meetingInfo, setMeetingInfo] = useState<string>("");
+  const [meetingType, setMeetingType] = useState<string>("");
+
   // Function to handle the sum
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
   // Get the current date (you can replace this line with actual current date logic)
-  const today = new Date(); // Example date "November 2, 2024 23:15:30"
+  const today = new Date("November 2, 2024 23:15:30"); // Example date "November 2, 2024 23:15:30"
   console.log("today = " + today);
 
   const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
@@ -48,31 +50,32 @@ export default function AttendanceForm() {
     // Function to determine the meeting info
     const getMeetingInfo = () => {
       let nextMeetingDate;
-      let meetingType = "";
+      let type = "";
 
       // Check if today is Wednesday or Saturday
       if (currentDay === 3) {
         // Today is Wednesday
-        meetingType = "Midweek Meeting";
+        type = "Midweek";
         nextMeetingDate = today; // Use today's date
       } else if (currentDay === 6) {
         // Today is Saturday
-        meetingType = "Weekend Meeting";
+        type = "Weekend";
         nextMeetingDate = today; // Use today's date
       } else if (currentDay >= 1 && currentDay <= 5) {
         // If today is Monday to Friday, find the next Wednesday
-        meetingType = "Midweek Meeting";
+        type = "Midweek";
         nextMeetingDate = getNextMeetingDate(3); // 3 = Wednesday
       } else {
         // If today is Sunday, find the next Saturday
-        meetingType = "Weekend Meeting";
+        type = "Weekend";
         nextMeetingDate = getNextMeetingDate(6); // 6 = Saturday
       }
 
       const formattedDate = formatDate(nextMeetingDate);
 
       // Update the state with the meeting type and formatted date
-      setMeetingInfo(`${meetingType} ${formattedDate}`);
+      setMeetingType(type);
+      setMeetingInfo(`${type} Meeting ${formattedDate}`);
     };
 
     // Call the function on component mount
@@ -109,12 +112,10 @@ export default function AttendanceForm() {
   // Function to handle submission and alert the values
   const handleSubmit = async () => {
     const formattedDate = formatDateMMDDYYYY(today);
-    const meetingType = "";
     const hearing = dValue || 0;
     const deaf = hValue || 0;
     const total = totalValue;
 
-    // Check if the attendance for this date already exists in the database
     // Check if the attendance for this date already exists using the new function
     const existingAttendance = await checkExistingAttendance(formattedDate);
 
@@ -126,10 +127,10 @@ export default function AttendanceForm() {
 
     if (existingAttendance.length === 0) {
       // Insert new record if it doesn't exist
-      await insertAttendance(formattedDate, hearing, deaf, total);
+      await insertAttendance(formattedDate, hearing, deaf, total, meetingType);
     } else {
       // Update existing record if it exists
-      await updateAttendance(formattedDate, hearing, deaf, total);
+      await updateAttendance(formattedDate, hearing, deaf, total, meetingType);
     }
   };
 
