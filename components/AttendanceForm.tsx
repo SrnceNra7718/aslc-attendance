@@ -231,10 +231,20 @@ export default function AttendanceForm() {
             <h2 className="ml-5 w-[16vw]">{totalValue}</h2>
           </div>
         </div>
-        {/* Edit button, only visible on hover */}
-        {isHovered &&
-          (isEditable ? (
-            <div className="absolute right-2 top-20 flex gap-2">
+        {/* Conditional rendering of the buttons */}
+        <div className="absolute right-2 top-20 flex gap-2">
+          {/* Only show Edit button when not editing */}
+          {isHovered && !isEditable && (
+            <CustomButton
+              iconType="pencil"
+              title="Edit"
+              onClick={() => setIsEditable(!isEditable)}
+            />
+          )}
+
+          {/* Show Save and Cancel buttons when editing */}
+          {isEditable && (
+            <>
               <CustomButton
                 iconType="ban"
                 title="Cancel"
@@ -245,17 +255,12 @@ export default function AttendanceForm() {
                 title="Save"
                 onClick={handleSubmit}
               />
-            </div>
-          ) : (
-            <div className="absolute right-2 top-20 flex">
-              <CustomButton
-                iconType="pencil"
-                title="Edit"
-                onClick={() => setIsEditable(!isEditable)}
-              />
-            </div>
-          ))}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 }
+
+////
