@@ -59,7 +59,7 @@ const AttendanceTable = () => {
   return (
     <div className="flex flex-col items-center justify-center p-[14vw]">
       <h1 className="mb-4 text-[5vw] font-bold">Attendance Updates</h1>
-      <Table aria-label="Attendance Table" className="w-screen">
+      <Table aria-label="Attendance Table" className="w-screen px-[6vw]">
         <TableHeader columns={columns}>
           {(column) => (
             <TableColumn key={column.key}>{column.label}</TableColumn>
