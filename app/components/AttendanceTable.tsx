@@ -8,7 +8,9 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Tooltip,
 } from "@nextui-org/react"; // Ensure correct imports for NextUI
+import { Pencil } from "lucide-react"; // Import Pencil icon from lucide-react
 
 const supabase = createClient();
 
@@ -49,12 +51,19 @@ const AttendanceTable = () => {
 
   // Columns definition for NextUI Table
   const columns = [
+    { key: "edit", label: "Edit" },
     { key: "date_mm_dd_yyyy", label: "Date" },
     { key: "meeting_type", label: "Meeting Type" },
     { key: "deaf", label: "Deaf" },
     { key: "hearing", label: "Hearing" },
     { key: "total", label: "Total" },
   ];
+
+  // Handle edit click
+  const handleEditClick = (date_mm_dd_yyyy: string) => {
+    console.log(`Edit clicked for date: ${date_mm_dd_yyyy}`);
+    // Place your edit functionality here
+  };
 
   return (
     <div className="flex flex-col items-center justify-center p-[14vw]">
@@ -68,7 +77,21 @@ const AttendanceTable = () => {
         <TableBody items={attendanceData} className="text-[1vw]">
           {(item) => (
             <TableRow key={item.date_mm_dd_yyyy}>
-              {(columnKey) => <TableCell>{item[columnKey] ?? "N/A"}</TableCell>}
+              <TableCell>
+                <Tooltip content="Edit attendance ">
+                  <span
+                    className="cursor-pointer text-lg text-default-400 active:opacity-50"
+                    onClick={() => handleEditClick(item.date_mm_dd_yyyy)}
+                  >
+                    <Pencil size={18} />
+                  </span>
+                </Tooltip>
+              </TableCell>
+              <TableCell>{item.date_mm_dd_yyyy ?? "N/A"}</TableCell>
+              <TableCell>{item.meeting_type ?? "N/A"}</TableCell>
+              <TableCell>{item.deaf ?? "N/A"}</TableCell>
+              <TableCell>{item.hearing ?? "N/A"}</TableCell>
+              <TableCell>{item.total ?? "N/A"}</TableCell>
             </TableRow>
           )}
         </TableBody>
