@@ -274,7 +274,7 @@ export default function AttendanceForm() {
           {/* Total display aligned to the right */}
           <div className="-m-2 -ml-[12vw] flex w-full flex-row items-center justify-center py-3 pl-[10vw]">
             <h2>Total = </h2>
-            <h2 className="ml-5 w-[16vw]">{totalValue}</h2>
+            <h2 className="ml-5 flex w-[16vw] justify-start">{totalValue}</h2>
           </div>
         </div>
         {/* Conditional rendering of the buttons */}
