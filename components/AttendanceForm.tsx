@@ -226,7 +226,7 @@ export default function AttendanceForm() {
 
   return (
     <div
-      className="container"
+      className="flex justify-center text-center"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => setIsHovered(true)}

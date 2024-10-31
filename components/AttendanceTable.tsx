@@ -59,13 +59,13 @@ const AttendanceTable = () => {
   return (
     <div className="flex flex-col items-center justify-center p-[14vw]">
       <h1 className="mb-4 text-[5vw] font-bold">Attendance Updates</h1>
-      <Table aria-label="Attendance Table">
+      <Table aria-label="Attendance Table" className="w-screen">
         <TableHeader columns={columns}>
           {(column) => (
             <TableColumn key={column.key}>{column.label}</TableColumn>
           )}
         </TableHeader>
-        <TableBody items={attendanceData}>
+        <TableBody items={attendanceData} className="text-[1vw]">
           {(item) => (
             <TableRow key={item.date_mm_dd_yyyy}>
               {(columnKey) => <TableCell>{item[columnKey] ?? "N/A"}</TableCell>}
