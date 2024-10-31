@@ -6,6 +6,7 @@ import {
 } from "@/utils/supabase/database";
 import { useState, useEffect } from "react";
 import CustomButton from "./ui/CustomButton";
+import LogDisplay from "./ui/LogDisplay";
 
 export default function AttendanceForm() {
   // State variables for the input values, allowing null as a valid type
@@ -26,27 +27,24 @@ export default function AttendanceForm() {
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
   // Get the current date (you can replace this line with actual current date logic)
-  const today = new Date("January 5, 2024 23:15:30"); // Example date "November 2, 2024 23:15:30"
-  console.log("today = " + today);
+  const today = new Date("January 2, 2024 23:15:30"); // Example date "November 2, 2024 23:15:30"
 
   const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-  console.log(today.getDay());
 
   // State to track hover status
   const [isHovered, setIsHovered] = useState(false);
 
   const [isEditable, setIsEditable] = useState(false); // New state for enabling/disabling inputs
 
+  const [logMessage, setLogMessage] = useState<string>(""); // State for the log message
+
   useEffect(() => {
     // Function to calculate the next Wednesday or Saturday date
     const getNextMeetingDate = (targetDay: number) => {
       const daysUntilTarget = (targetDay + 7 - currentDay) % 7 || 7;
-      console.log("targetDay = " + targetDay);
-      console.log("daysUntilTarget = " + daysUntilTarget);
 
       const nextMeetingDate = new Date(today);
       nextMeetingDate.setDate(today.getDate() + daysUntilTarget);
-      console.log("nextMeetingDate = " + nextMeetingDate);
 
       return nextMeetingDate;
     };
@@ -164,12 +162,16 @@ export default function AttendanceForm() {
     // If no changes detected, log and abort submission
     if (!hasChanges) {
       console.log("No changes detected. Submission aborted.");
+      setLogMessage("No changes detected. Submission aborted."); // Log message
+
       return; // Abort submission if no changes
     }
 
     // Check if attendance for this date already exists
     if (existingAttendance === null) {
       console.error("Error checking for existing attendance.");
+      setLogMessage("Error checking for existing attendance."); // Log error message
+
       return;
     }
 
@@ -189,6 +191,7 @@ export default function AttendanceForm() {
           total,
           meetingType,
         );
+        setLogMessage("Attendance updated successfully."); // Log update message
         console.log("Attendance updated successfully.");
       } else {
         // Insert new record if date does not match
@@ -199,6 +202,7 @@ export default function AttendanceForm() {
           total,
           meetingType,
         );
+        setLogMessage("New attendance record inserted successfully."); // Log insert message
         console.log("New attendance record inserted successfully.");
       }
 
@@ -207,9 +211,11 @@ export default function AttendanceForm() {
       setOriginalHValue(hearing);
       setIsEditable(false); // Exit edit mode after submission
     } catch (error) {
+      setLogMessage(`Error during attendance submission: ${error}`); // Log error message
       console.error("Error during attendance submission:", error);
     }
   };
+
   // Function to handle canceling the edit and revert the values
   const handleCancel = () => {
     setIsHovered(true);
@@ -299,6 +305,8 @@ export default function AttendanceForm() {
           )}
         </div>
       </div>
+      {logMessage && <LogDisplay message={logMessage} />}{" "}
+      {/* Display LogDisplay with log message */}
     </div>
   );
 }
