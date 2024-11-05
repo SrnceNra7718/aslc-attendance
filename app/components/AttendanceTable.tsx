@@ -106,15 +106,23 @@ const AttendanceTable = () => {
   return (
     <div className="flex flex-col items-center justify-center p-[14vw]">
       <h1 className="mb-4 text-[5vw] font-bold">Attendance Updates</h1>
-      <Table className="w-screen px-[6vw] text-[1vw]">
+      <Table className="w-screen px-[6vw] text-[1vw] max-md:text-[20vw]">
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn key={column.key}>{column.label}</TableColumn>
+            <TableColumn
+              className="text-[2vw] max-sm:text-[4vw]"
+              key={column.key}
+            >
+              {column.label}
+            </TableColumn>
           )}
         </TableHeader>
         <TableBody>
           {attendanceData.map((item) => (
-            <TableRow key={item.date_mm_dd_yyyy}>
+            <TableRow
+              key={item.date_mm_dd_yyyy}
+              className="text-[1.5vw] max-sm:text-[3vw]"
+            >
               <TableCell>
                 {editingRow === item.date_mm_dd_yyyy ? (
                   <button
