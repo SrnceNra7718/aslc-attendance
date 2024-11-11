@@ -80,3 +80,22 @@ export const updateAttendance = async (
     console.error("Update Error: ", error.message);
   }
 };
+
+/**
+ * Delete an existing attendance record.
+ * @param formattedDate The formatted date (mm_dd_yyyy) of the record to delete.
+ * @returns A boolean indicating success (true) or failure (false) of the deletion.
+ */
+export const deleteAttendance = async (formattedDate: string) => {
+  const { error } = await supabase
+    .from("attendance")
+    .delete() // Perform delete operation
+    .eq("date_mm_dd_yyyy", formattedDate); // Target the specific date
+
+  if (error) {
+    console.error("Delete Error: ", error.message);
+    return false; // Return false if deletion fails
+  }
+
+  return true; // Return true if deletion succeeds
+};

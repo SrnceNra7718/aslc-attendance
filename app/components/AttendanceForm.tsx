@@ -27,7 +27,7 @@ export default function AttendanceForm() {
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
   // Get the current date (you can replace this line with actual current date logic)
-  const today = new Date("November 2, 2024 23:15:30"); // Example date "November 2, 2024 23:15:30"
+  const today = new Date(); // Example date "November 2, 2024 23:15:30"
 
   const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
 
@@ -37,6 +37,7 @@ export default function AttendanceForm() {
   const [isEditable, setIsEditable] = useState(false); // New state for enabling/disabling inputs
 
   const [logMessage, setLogMessage] = useState<string>(""); // State for the log message
+  const [isSaveClicked, setIsSaveClicked] = useState<boolean>(false); // New state
 
   useEffect(() => {
     // Function to calculate the next Wednesday or Saturday date
@@ -163,6 +164,8 @@ export default function AttendanceForm() {
     if (!hasChanges) {
       console.log("No changes detected. Submission aborted.");
       setLogMessage("No changes detected. Submission aborted."); // Log message
+      setIsSaveClicked(true); // Show LogDisplay
+      setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
 
       return; // Abort submission if no changes
     }
@@ -192,6 +195,9 @@ export default function AttendanceForm() {
           meetingType,
         );
         setLogMessage("Attendance updated successfully."); // Log update message
+        setIsSaveClicked(true); // Show LogDisplay
+        setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
+
         console.log("Attendance updated successfully.");
       } else {
         // Insert new record if date does not match
@@ -203,6 +209,9 @@ export default function AttendanceForm() {
           meetingType,
         );
         setLogMessage("New attendance record inserted successfully."); // Log insert message
+        setIsSaveClicked(true); // Show LogDisplay
+        setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
+
         console.log("New attendance record inserted successfully.");
       }
 
@@ -248,6 +257,7 @@ export default function AttendanceForm() {
           <div className="-m-2 flex flex-row pl-[10vw]">
             <h2 className="-my-2 flex items-center">D = </h2>
             <input
+              id="dValue"
               type="number"
               value={dValue ?? ""} // Show empty input when value is null
               onChange={handleInputChange(setDValue)}
@@ -261,6 +271,7 @@ export default function AttendanceForm() {
           <div className="flex flex-row pl-[10vw] pt-3">
             <h2 className="flex items-center">H = </h2>
             <input
+              id="hValue"
               type="number"
               value={hValue ?? ""} // Show empty input when value is null
               onChange={handleInputChange(setHValue)}
@@ -305,7 +316,9 @@ export default function AttendanceForm() {
           )}
         </div>
       </div>
-      {logMessage && <LogDisplay message={logMessage} />}{" "}
+      {logMessage && (
+        <LogDisplay message={logMessage} isButtonClicked={isSaveClicked} />
+      )}{" "}
       {/* Display LogDisplay with log message */}
     </div>
   );

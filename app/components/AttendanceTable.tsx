@@ -1,7 +1,8 @@
+// AttendanceTable.tsx
 "use client"; // Indicates that this component is a client component
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client"; // Supabase client
-import { updateAttendance } from "@/utils/supabase/database"; // Function to update attendance
+import { deleteAttendance, updateAttendance } from "@/utils/supabase/database"; // Function to update attendance
 
 import {
   Table,
@@ -13,7 +14,8 @@ import {
   Tooltip,
   Input,
 } from "@nextui-org/react"; // Ensure correct imports for NextUI
-import { Pencil, Save } from "lucide-react"; // Import Pencil icon from lucide-react
+import { Pencil, Save, Trash2, XCircle } from "lucide-react"; // Import Pencil icon from lucide-react
+import LogDisplay from "./ui/LogDisplay";
 
 const supabase = createClient(); // Create a Supabase client instance
 
@@ -41,6 +43,8 @@ const AttendanceTable = () => {
   const [attendanceData, setAttendanceData] = useState<any[]>([]); // State for attendance data
   const [editingRow, setEditingRow] = useState<string | null>(null); // State for the row being edited
   const [localEditedData, setLocalEditedData] = useState<any>(null); // State for input fields
+  const [logMessage, setLogMessage] = useState<string>(""); // State for the log message
+  const [isSaveButtonClicked, setIsSaveButtonClicked] = useState(false); // State for save button click
 
   useEffect(() => {
     const loadLatestData = async () => {
@@ -55,12 +59,12 @@ const AttendanceTable = () => {
 
   // Columns definition for NextUI Table
   const columns = [
-    { key: "edit", label: "Edit" },
     { key: "date_mm_dd_yyyy", label: "Date" },
     { key: "meeting_type", label: "Meeting Type" },
     { key: "deaf", label: "Deaf" },
     { key: "hearing", label: "Hearing" },
     { key: "total", label: "Total" },
+    { key: "edit", label: "Edit" },
   ];
 
   const handleEditClick = (rowKey: string, rowData: any) => {
@@ -69,7 +73,8 @@ const AttendanceTable = () => {
   };
 
   const handleInputChange = (key: string, value: string) => {
-    const numberValue = Number(value) || 0; // Convert to number or default to 0
+    // Ensure the value is not negative and default to 0 if empty or invalid
+    const numberValue = Math.max(0, Number(value) || 0);
     setLocalEditedData((prevData: any) => {
       const updatedData = { ...prevData, [key]: numberValue };
       updatedData.total = updatedData.hearing + updatedData.deaf; // Update total in real-time
@@ -79,38 +84,123 @@ const AttendanceTable = () => {
 
   const handleSave = async () => {
     if (localEditedData) {
-      const { date_mm_dd_yyyy, hearing, deaf, meeting_type, total } =
-        localEditedData; // Destructure edited data
+      const formattedDate = localEditedData.date_mm_dd_yyyy;
+      const hearing = Number(localEditedData.hearing) || 0;
+      const deaf = Number(localEditedData.deaf) || 0;
+      const total = localEditedData.total;
+      const meetingType = localEditedData.meeting_type;
 
-      await updateAttendance(
-        date_mm_dd_yyyy,
-        Number(hearing),
-        Number(deaf),
-        total,
-        meeting_type,
-      ); // Update attendance in the database
-
-      setAttendanceData((prevData) =>
-        prevData.map((item) =>
-          item.date_mm_dd_yyyy === date_mm_dd_yyyy
-            ? { ...item, hearing, deaf, total } // Update item in attendance data
-            : item,
-        ),
+      // Retrieve the original values from attendanceData
+      const originalData = attendanceData.find(
+        (record) => record.date_mm_dd_yyyy === formattedDate,
       );
 
-      setEditingRow(null); // Exit edit mode
-      setLocalEditedData(null); // Reset local edited data
+      if (!originalData) {
+        console.error("Original record not found. Submission aborted.");
+        setLogMessage("Original record not found. Submission aborted.");
+        setIsSaveButtonClicked(true);
+        setTimeout(() => setIsSaveButtonClicked(false), 1000);
+        return;
+      }
+
+      // Validate that the values have changed compared to the original values
+      const hasChanges =
+        hearing !== originalData.hearing || deaf !== originalData.deaf;
+
+      if (!hasChanges) {
+        console.log("No changes detected. Submission aborted.");
+        setLogMessage("No changes detected. Submission aborted.");
+        setIsSaveButtonClicked(true);
+        setTimeout(() => setIsSaveButtonClicked(false), 1000);
+        return;
+      }
+
+      try {
+        // Update existing record in the database
+        await updateAttendance(
+          formattedDate,
+          hearing,
+          deaf,
+          total,
+          meetingType,
+        );
+        setLogMessage("Attendance updated successfully.");
+        setIsSaveButtonClicked(true);
+        setTimeout(() => setIsSaveButtonClicked(false), 1000);
+
+        // Update the attendanceData state with the modified values
+        setAttendanceData((prevData) =>
+          prevData.map((item) =>
+            item.date_mm_dd_yyyy === formattedDate
+              ? { ...item, hearing, deaf, total }
+              : item,
+          ),
+        );
+
+        setEditingRow(null);
+        setLocalEditedData(null);
+      } catch (error) {
+        setLogMessage(`Error during attendance submission: ${error}`);
+        console.error("Error during attendance submission:", error);
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRow(null);
+    setLocalEditedData(null); // Reset local edit data
+  };
+
+  const handleDelete = async (date_mm_dd_yyyy: string) => {
+    try {
+      // Find the record to be deleted based on the date_mm_dd_yyyy
+      const recordToDelete = attendanceData.find(
+        (record) => record.date_mm_dd_yyyy === date_mm_dd_yyyy,
+      );
+
+      if (!recordToDelete) {
+        console.error("Record not found for deletion.");
+        setLogMessage("Record not found for deletion.");
+        setIsSaveButtonClicked(true);
+        setTimeout(() => setIsSaveButtonClicked(false), 1000);
+        return;
+      }
+
+      // Perform the deletion
+      const isDeleted = await deleteAttendance(date_mm_dd_yyyy);
+
+      if (isDeleted) {
+        // Update state to remove deleted record from the table
+        setAttendanceData((prevData) =>
+          prevData.filter((item) => item.date_mm_dd_yyyy !== date_mm_dd_yyyy),
+        );
+        setLogMessage("Attendance record deleted successfully.");
+      } else {
+        console.error("Failed to delete attendance record.");
+        setLogMessage("Failed to delete attendance record.");
+      }
+      setIsSaveButtonClicked(true);
+      setTimeout(() => setIsSaveButtonClicked(false), 1000);
+
+      // Clear any editing state after delete
+      setEditingRow(null);
+      setLocalEditedData(null);
+    } catch (error) {
+      setLogMessage(`Error during deletion: ${error}`);
+      console.error("Error during deletion:", error);
     }
   };
 
   return (
     <div className="flex flex-col items-center justify-center p-[14vw]">
-      <h1 className="mb-4 text-[5vw] font-bold">Attendance Updates</h1>
-      <Table className="w-screen px-[6vw] text-[1vw] max-md:text-[20vw]">
+      <h1 className="mb-4 text-[5vw] font-bold max-sm:text-[7vw]">
+        Attendance Updates
+      </h1>
+      <Table aria-label="AttendanceTable" className="w-screen px-[6vw]">
         <TableHeader columns={columns}>
           {(column) => (
             <TableColumn
-              className="text-[2vw] max-sm:text-[4vw]"
+              className="text-[1.5vw] max-sm:text-[3vw]"
               key={column.key}
             >
               {column.label}
@@ -119,35 +209,20 @@ const AttendanceTable = () => {
         </TableHeader>
         <TableBody>
           {attendanceData.map((item) => (
-            <TableRow
-              key={item.date_mm_dd_yyyy}
-              className="text-[1.5vw] max-sm:text-[3vw]"
-            >
-              <TableCell>
-                {editingRow === item.date_mm_dd_yyyy ? (
-                  <button
-                    onClick={handleSave}
-                    className="rounded bg-green-500 px-2 py-1 text-white"
-                  >
-                    <Save size={18} />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleEditClick(item.date_mm_dd_yyyy, item)}
-                    className="px-2 py-1 text-blue-500 underline"
-                  >
-                    <Pencil size={18} />
-                  </button>
-                )}
-              </TableCell>
+            <TableRow key={item.date_mm_dd_yyyy} className="text-[1vw]">
               <TableCell>{item.date_mm_dd_yyyy ?? "N/A"}</TableCell>
               <TableCell>{item.meeting_type ?? "N/A"}</TableCell>
               <TableCell>
                 {editingRow === item.date_mm_dd_yyyy ? (
                   <Input
+                    aria-label="deaf"
                     type="number"
                     variant="bordered"
-                    value={localEditedData?.deaf || item.deaf} // Use local state for editable input
+                    value={
+                      localEditedData?.deaf === 0
+                        ? "0"
+                        : localEditedData?.deaf || item.deaf
+                    } // Show 0 explicitly if the value is 0
                     onChange={(e) => handleInputChange("deaf", e.target.value)}
                     className="-m-3 w-16 max-md:w-[15vw]"
                   />
@@ -158,9 +233,14 @@ const AttendanceTable = () => {
               <TableCell>
                 {editingRow === item.date_mm_dd_yyyy ? (
                   <Input
+                    aria-label="hearing"
                     variant="bordered"
                     type="number"
-                    value={localEditedData?.hearing || item.hearing} // Use local state for editable input
+                    value={
+                      localEditedData?.hearing === 0
+                        ? "0"
+                        : localEditedData?.hearing || item.hearing
+                    } // Show 0 explicitly if the value is 0
                     onChange={(e) =>
                       handleInputChange("hearing", e.target.value)
                     }
@@ -170,15 +250,58 @@ const AttendanceTable = () => {
                   (item.hearing ?? "N/A")
                 )}
               </TableCell>
+
               <TableCell>
                 {editingRow === item.date_mm_dd_yyyy
                   ? localEditedData?.total // Show the calculated total
                   : (item.total ?? "N/A")}
               </TableCell>
+              <TableCell>
+                {editingRow === item.date_mm_dd_yyyy ? (
+                  <div className="flex gap-1">
+                    <button
+                      onClick={handleSave}
+                      className="rounded bg-green-500 px-1 py-0.5 text-white"
+                    >
+                      <Save size={18} />
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="rounded bg-gray-500 px-1 py-0.5 text-white"
+                    >
+                      <XCircle size={18} /> {/* Cancel button */}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() =>
+                        handleEditClick(item.date_mm_dd_yyyy, item)
+                      }
+                      className="px-1 py-0.5 text-blue-500 underline"
+                    >
+                      <Pencil size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.date_mm_dd_yyyy)} // Pass date_mm_dd_yyyy to handleDelete
+                      className="rounded px-1 py-0.5 text-red-500"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      {logMessage && (
+        <LogDisplay
+          message={logMessage}
+          isButtonClicked={isSaveButtonClicked}
+        />
+      )}{" "}
+      {/* Display LogDisplay with log message */}
     </div>
   );
 };
