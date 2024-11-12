@@ -27,7 +27,7 @@ export default function AttendanceForm() {
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
   // Get the current date (you can replace this line with actual current date logic)
-  const today = new Date("December 28, 2024 23:15:30"); // Example date "November 2, 2024 23:15:30"
+  const today = new Date("January 1, 2025 23:15:30"); // Example date "November 2, 2024 23:15:30"
 
   const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
 

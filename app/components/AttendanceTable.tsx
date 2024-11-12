@@ -20,7 +20,7 @@ import {
 } from "@nextui-org/react"; // Ensure correct imports for NextUI
 import { Pencil, Save, Trash2, XCircle } from "lucide-react"; // Import Pencil icon from lucide-react
 import LogDisplay from "./ui/LogDisplay";
-import { getMonthFromDate } from "./functions/attendanceUtils";
+import { getMonthAndYearFromDate } from "./functions/attendanceUtils";
 
 // Define the interface for each attendance record
 interface AttendanceRecord {
@@ -54,7 +54,7 @@ const AttendanceTable = () => {
     Record<string, AttendanceRecord[]>
   >(
     (acc, item) => {
-      const month = getMonthFromDate(item.date_mm_dd_yyyy); // Extract month
+      const month = getMonthAndYearFromDate(item.date_mm_dd_yyyy); // Extract month
       if (!acc[month]) acc[month] = [];
       acc[month].push(item);
       return acc;
@@ -197,7 +197,7 @@ const AttendanceTable = () => {
 
   return (
     <div className="flex flex-col items-center justify-center p-[14vw]">
-      <h1 className="mb-4 text-[5vw] font-bold max-sm:text-[7vw]">
+      <h1 className="mb-2 text-[5vw] font-bold max-sm:text-[7vw]">
         Attendance Updates
       </h1>
       {Object.entries(monthlyAttendance).map(([month, records]) => (
@@ -205,7 +205,7 @@ const AttendanceTable = () => {
           key={month}
           className="mt-4 flex flex-col items-center justify-center"
         >
-          <h2 className="mb-1 text-[4vw] font-bold max-sm:text-[6vw]">{`Month: ${month}`}</h2>
+          <h2 className="mb-1 text-[3vw] font-bold max-sm:text-[5vw]">{`${getMonthAndYearFromDate(records[0].date_mm_dd_yyyy)}`}</h2>
           <Table aria-label="AttendanceTable" className="w-screen px-[6vw]">
             <TableHeader columns={columns}>
               {(column) => (
