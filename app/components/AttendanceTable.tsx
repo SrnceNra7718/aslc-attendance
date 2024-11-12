@@ -49,19 +49,6 @@ const AttendanceTable = () => {
     return () => clearInterval(intervalId); // Clear interval on component unmount
   }, []);
 
-  // // Define monthlyAttendance as a record of arrays of AttendanceRecord items
-  // const monthlyAttendance = attendanceData.reduce<
-  //   Record<string, AttendanceRecord[]>
-  // >(
-  //   (acc, item) => {
-  //     const month = getMonthAndYearFromDate(item.date_mm_dd_yyyy); // Extract month
-  //     if (!acc[month]) acc[month] = [];
-  //     acc[month].push(item);
-  //     return acc;
-  //   },
-  //   {} as Record<string, AttendanceRecord[]>,
-  // );
-
   // Group records by both month and meeting type (mid-week and weekend)
   const monthlyAttendance = attendanceData.reduce<{
     [month: string]: {
