@@ -228,7 +228,7 @@ const AttendanceTable = () => {
         ([month, { midWeek, weekend }]) => (
           <div
             key={month}
-            className="my-[3vw] flex flex-col items-center justify-center rounded-3xl bg-accent py-[3vw] max-sm:scale-85"
+            className="m-[3vw] flex flex-col items-center justify-center rounded-3xl bg-accent py-[3vw]"
           >
             <h2 className="mb-0.5 text-[3vw] font-bold max-sm:text-[5vw]">{`${month}`}</h2>
             {/* Display Mid-week Meetings */}
@@ -455,130 +455,6 @@ const AttendanceTable = () => {
       {/* Display LogDisplay with log message */}
     </div>
   );
-
-  // return (
-  //   <div className="flex flex-col items-center justify-center p-[14vw]">
-  //     <h1 className="mb-2 text-[5vw] font-bold max-sm:text-[7vw]">
-  //       Attendance Updates
-  //     </h1>
-  //     {Object.entries(monthlyAttendance).map(([month, records]) => (
-  //       <div
-  //         key={month}
-  //         className="mt-4 flex flex-col items-center justify-center"
-  //       >
-  //         <h2 className="mb-1 text-[3vw] font-bold max-sm:text-[5vw]">{`${getMonthAndYearFromDate(records[0].date_mm_dd_yyyy)}`}</h2>
-  //         <Table aria-label="AttendanceTable" className="w-screen px-[6vw]">
-  //           <TableHeader columns={columns}>
-  //             {(column) => (
-  //               <TableColumn
-  //                 className="text-[1.5vw] max-sm:text-[3vw]"
-  //                 key={column.key}
-  //               >
-  //                 {column.label}
-  //               </TableColumn>
-  //             )}
-  //           </TableHeader>
-  //           <TableBody>
-  //             {records.map((item) => (
-  //               <TableRow key={item.date_mm_dd_yyyy} className="text-[1vw]">
-  //                 <TableCell>{item.date_mm_dd_yyyy ?? "N/A"}</TableCell>
-  //                 <TableCell>{item.meeting_type ?? "N/A"}</TableCell>
-  //                 <TableCell>
-  //                   {editingRow === item.date_mm_dd_yyyy ? (
-  //                     <Input
-  //                       aria-label="deaf"
-  //                       type="number"
-  //                       variant="bordered"
-  //                       value={
-  //                         localEditedData?.deaf === 0
-  //                           ? "0"
-  //                           : localEditedData?.deaf || item.deaf
-  //                       } // Show 0 explicitly if the value is 0
-  //                       onChange={(e) =>
-  //                         handleInputChange("deaf", e.target.value)
-  //                       }
-  //                       className="-m-3 w-16 max-md:w-[10vw]"
-  //                     />
-  //                   ) : (
-  //                     (item.deaf ?? "N/A")
-  //                   )}
-  //                 </TableCell>
-  //                 <TableCell>
-  //                   {editingRow === item.date_mm_dd_yyyy ? (
-  //                     <Input
-  //                       aria-label="hearing"
-  //                       variant="bordered"
-  //                       type="number"
-  //                       value={
-  //                         localEditedData?.hearing === 0
-  //                           ? "0"
-  //                           : localEditedData?.hearing || item.hearing
-  //                       } // Show 0 explicitly if the value is 0
-  //                       onChange={(e) =>
-  //                         handleInputChange("hearing", e.target.value)
-  //                       }
-  //                       className="-m-3 w-16 max-md:w-[10vw]"
-  //                     />
-  //                   ) : (
-  //                     (item.hearing ?? "N/A")
-  //                   )}
-  //                 </TableCell>
-
-  //                 <TableCell>
-  //                   {editingRow === item.date_mm_dd_yyyy
-  //                     ? localEditedData?.total // Show the calculated total
-  //                     : (item.total ?? "N/A")}
-  //                 </TableCell>
-  //                 <TableCell>
-  //                   {editingRow === item.date_mm_dd_yyyy ? (
-  //                     <div className="flex gap-1">
-  //                       <button
-  //                         onClick={handleSave}
-  //                         className="rounded bg-green-500 px-1 py-0.5 text-white"
-  //                       >
-  //                         <Save size={18} />
-  //                       </button>
-  //                       <button
-  //                         onClick={handleCancelEdit}
-  //                         className="rounded bg-gray-500 px-1 py-0.5 text-white"
-  //                       >
-  //                         <XCircle size={18} /> {/* Cancel button */}
-  //                       </button>
-  //                     </div>
-  //                   ) : (
-  //                     <div className="flex gap-1">
-  //                       <button
-  //                         onClick={() =>
-  //                           handleEditClick(item.date_mm_dd_yyyy, item)
-  //                         }
-  //                         className="px-1 py-0.5 text-blue-500 underline"
-  //                       >
-  //                         <Pencil size={18} />
-  //                       </button>
-  //                       <button
-  //                         onClick={() => handleDelete(item.date_mm_dd_yyyy)} // Pass date_mm_dd_yyyy to handleDelete
-  //                         className="rounded px-1 py-0.5 text-red-500"
-  //                       >
-  //                         <Trash2 size={18} />
-  //                       </button>
-  //                     </div>
-  //                   )}
-  //                 </TableCell>
-  //               </TableRow>
-  //             ))}
-  //           </TableBody>
-  //         </Table>
-  //         {logMessage && (
-  //           <LogDisplay
-  //             message={logMessage}
-  //             isButtonClicked={isSaveButtonClicked}
-  //           />
-  //         )}{" "}
-  //         {/* Display LogDisplay with log message */}
-  //       </div>
-  //     ))}
-  //   </div>
-  // );
 };
 
 export default AttendanceTable;
