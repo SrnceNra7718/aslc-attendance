@@ -2,7 +2,11 @@
 "use client"; // Indicates that this component is a client component
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client"; // Supabase client
-import { deleteAttendance, updateAttendance } from "@/utils/supabase/database"; // Function to update attendance
+import {
+  deleteAttendance,
+  fetchLatestAttendance,
+  updateAttendance,
+} from "@/utils/supabase/database"; // Function to update attendance
 
 import {
   Table,
@@ -16,31 +20,19 @@ import {
 } from "@nextui-org/react"; // Ensure correct imports for NextUI
 import { Pencil, Save, Trash2, XCircle } from "lucide-react"; // Import Pencil icon from lucide-react
 import LogDisplay from "./ui/LogDisplay";
+import { getMonthFromDate } from "./functions/attendanceUtils";
 
-const supabase = createClient(); // Create a Supabase client instance
-
-// Function to fetch the latest attendance records
-const fetchLatestAttendance = async () => {
-  try {
-    const { data: attendance, error } = await supabase
-      .from("attendance")
-      .select("date_mm_dd_yyyy, meeting_type, deaf, hearing, total")
-      .order("date_mm_dd_yyyy", { ascending: false }) // Order by date descending
-      .limit(10); // Limit to the latest 10 records
-
-    if (error) {
-      console.error("Error fetching latest attendance:", error);
-      return [];
-    }
-    return attendance || []; // Return attendance data or an empty array
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    return []; // Return an empty array on error
-  }
-};
+// Define the interface for each attendance record
+interface AttendanceRecord {
+  date_mm_dd_yyyy: string;
+  meeting_type: string;
+  deaf: number;
+  hearing: number;
+  total: number;
+}
 
 const AttendanceTable = () => {
-  const [attendanceData, setAttendanceData] = useState<any[]>([]); // State for attendance data
+  const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
   const [editingRow, setEditingRow] = useState<string | null>(null); // State for the row being edited
   const [localEditedData, setLocalEditedData] = useState<any>(null); // State for input fields
   const [logMessage, setLogMessage] = useState<string>(""); // State for the log message
@@ -57,6 +49,18 @@ const AttendanceTable = () => {
     return () => clearInterval(intervalId); // Clear interval on component unmount
   }, []);
 
+  // Define monthlyAttendance as a record of arrays of AttendanceRecord items
+  const monthlyAttendance = attendanceData.reduce<
+    Record<string, AttendanceRecord[]>
+  >(
+    (acc, item) => {
+      const month = getMonthFromDate(item.date_mm_dd_yyyy); // Extract month
+      if (!acc[month]) acc[month] = [];
+      acc[month].push(item);
+      return acc;
+    },
+    {} as Record<string, AttendanceRecord[]>,
+  );
   // Columns definition for NextUI Table
   const columns = [
     { key: "date_mm_dd_yyyy", label: "Date" },
@@ -196,112 +200,122 @@ const AttendanceTable = () => {
       <h1 className="mb-4 text-[5vw] font-bold max-sm:text-[7vw]">
         Attendance Updates
       </h1>
-      <Table aria-label="AttendanceTable" className="w-screen px-[6vw]">
-        <TableHeader columns={columns}>
-          {(column) => (
-            <TableColumn
-              className="text-[1.5vw] max-sm:text-[3vw]"
-              key={column.key}
-            >
-              {column.label}
-            </TableColumn>
-          )}
-        </TableHeader>
-        <TableBody>
-          {attendanceData.map((item) => (
-            <TableRow key={item.date_mm_dd_yyyy} className="text-[1vw]">
-              <TableCell>{item.date_mm_dd_yyyy ?? "N/A"}</TableCell>
-              <TableCell>{item.meeting_type ?? "N/A"}</TableCell>
-              <TableCell>
-                {editingRow === item.date_mm_dd_yyyy ? (
-                  <Input
-                    aria-label="deaf"
-                    type="number"
-                    variant="bordered"
-                    value={
-                      localEditedData?.deaf === 0
-                        ? "0"
-                        : localEditedData?.deaf || item.deaf
-                    } // Show 0 explicitly if the value is 0
-                    onChange={(e) => handleInputChange("deaf", e.target.value)}
-                    className="-m-3 w-16 max-md:w-[15vw]"
-                  />
-                ) : (
-                  (item.deaf ?? "N/A")
-                )}
-              </TableCell>
-              <TableCell>
-                {editingRow === item.date_mm_dd_yyyy ? (
-                  <Input
-                    aria-label="hearing"
-                    variant="bordered"
-                    type="number"
-                    value={
-                      localEditedData?.hearing === 0
-                        ? "0"
-                        : localEditedData?.hearing || item.hearing
-                    } // Show 0 explicitly if the value is 0
-                    onChange={(e) =>
-                      handleInputChange("hearing", e.target.value)
-                    }
-                    className="-m-3 w-16 max-md:w-[15vw]"
-                  />
-                ) : (
-                  (item.hearing ?? "N/A")
-                )}
-              </TableCell>
+      {Object.entries(monthlyAttendance).map(([month, records]) => (
+        <div
+          key={month}
+          className="mt-4 flex flex-col items-center justify-center"
+        >
+          <h2 className="mb-1 text-[4vw] font-bold max-sm:text-[6vw]">{`Month: ${month}`}</h2>
+          <Table aria-label="AttendanceTable" className="w-screen px-[6vw]">
+            <TableHeader columns={columns}>
+              {(column) => (
+                <TableColumn
+                  className="text-[1.5vw] max-sm:text-[3vw]"
+                  key={column.key}
+                >
+                  {column.label}
+                </TableColumn>
+              )}
+            </TableHeader>
+            <TableBody>
+              {records.map((item) => (
+                <TableRow key={item.date_mm_dd_yyyy} className="text-[1vw]">
+                  <TableCell>{item.date_mm_dd_yyyy ?? "N/A"}</TableCell>
+                  <TableCell>{item.meeting_type ?? "N/A"}</TableCell>
+                  <TableCell>
+                    {editingRow === item.date_mm_dd_yyyy ? (
+                      <Input
+                        aria-label="deaf"
+                        type="number"
+                        variant="bordered"
+                        value={
+                          localEditedData?.deaf === 0
+                            ? "0"
+                            : localEditedData?.deaf || item.deaf
+                        } // Show 0 explicitly if the value is 0
+                        onChange={(e) =>
+                          handleInputChange("deaf", e.target.value)
+                        }
+                        className="-m-3 w-16 max-md:w-[15vw]"
+                      />
+                    ) : (
+                      (item.deaf ?? "N/A")
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingRow === item.date_mm_dd_yyyy ? (
+                      <Input
+                        aria-label="hearing"
+                        variant="bordered"
+                        type="number"
+                        value={
+                          localEditedData?.hearing === 0
+                            ? "0"
+                            : localEditedData?.hearing || item.hearing
+                        } // Show 0 explicitly if the value is 0
+                        onChange={(e) =>
+                          handleInputChange("hearing", e.target.value)
+                        }
+                        className="-m-3 w-16 max-md:w-[15vw]"
+                      />
+                    ) : (
+                      (item.hearing ?? "N/A")
+                    )}
+                  </TableCell>
 
-              <TableCell>
-                {editingRow === item.date_mm_dd_yyyy
-                  ? localEditedData?.total // Show the calculated total
-                  : (item.total ?? "N/A")}
-              </TableCell>
-              <TableCell>
-                {editingRow === item.date_mm_dd_yyyy ? (
-                  <div className="flex gap-1">
-                    <button
-                      onClick={handleSave}
-                      className="rounded bg-green-500 px-1 py-0.5 text-white"
-                    >
-                      <Save size={18} />
-                    </button>
-                    <button
-                      onClick={handleCancelEdit}
-                      className="rounded bg-gray-500 px-1 py-0.5 text-white"
-                    >
-                      <XCircle size={18} /> {/* Cancel button */}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() =>
-                        handleEditClick(item.date_mm_dd_yyyy, item)
-                      }
-                      className="px-1 py-0.5 text-blue-500 underline"
-                    >
-                      <Pencil size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.date_mm_dd_yyyy)} // Pass date_mm_dd_yyyy to handleDelete
-                      className="rounded px-1 py-0.5 text-red-500"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      {logMessage && (
-        <LogDisplay
-          message={logMessage}
-          isButtonClicked={isSaveButtonClicked}
-        />
-      )}{" "}
-      {/* Display LogDisplay with log message */}
+                  <TableCell>
+                    {editingRow === item.date_mm_dd_yyyy
+                      ? localEditedData?.total // Show the calculated total
+                      : (item.total ?? "N/A")}
+                  </TableCell>
+                  <TableCell>
+                    {editingRow === item.date_mm_dd_yyyy ? (
+                      <div className="flex gap-1">
+                        <button
+                          onClick={handleSave}
+                          className="rounded bg-green-500 px-1 py-0.5 text-white"
+                        >
+                          <Save size={18} />
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="rounded bg-gray-500 px-1 py-0.5 text-white"
+                        >
+                          <XCircle size={18} /> {/* Cancel button */}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() =>
+                            handleEditClick(item.date_mm_dd_yyyy, item)
+                          }
+                          className="px-1 py-0.5 text-blue-500 underline"
+                        >
+                          <Pencil size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.date_mm_dd_yyyy)} // Pass date_mm_dd_yyyy to handleDelete
+                          className="rounded px-1 py-0.5 text-red-500"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {logMessage && (
+            <LogDisplay
+              message={logMessage}
+              isButtonClicked={isSaveButtonClicked}
+            />
+          )}{" "}
+          {/* Display LogDisplay with log message */}
+        </div>
+      ))}
     </div>
   );
 };

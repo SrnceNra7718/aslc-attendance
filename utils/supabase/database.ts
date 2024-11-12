@@ -2,6 +2,24 @@ import { createClient } from "./client";
 
 const supabase = createClient();
 
+export const fetchLatestAttendance = async () => {
+  try {
+    const { data: attendance, error } = await supabase
+      .from("attendance")
+      .select("date_mm_dd_yyyy, meeting_type, deaf, hearing, total")
+      .order("date_mm_dd_yyyy", { ascending: true }); // Order by date descending
+
+    if (error) {
+      console.error("Error fetching latest attendance:", error);
+      return [];
+    }
+    return attendance || []; // Return attendance data or an empty array
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return []; // Return an empty array on error
+  }
+};
+
 /**
  * Check if attendance exists for the given date.
  * @param formattedDate The date in mm_dd_yyyy format to check.
