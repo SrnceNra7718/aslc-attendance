@@ -99,6 +99,70 @@ export const countTotalMeetings = (monthData: {
   return { midWeekCount, weekendCount };
 };
 
+// Function to count overall deaf only totals per meeting type for each month
+export const calculateDeafTotals = (attendanceData: AttendanceRecord[]) => {
+  // Initialize an object to hold the totals per meeting type for each month
+  const monthlyDeafTotals: {
+    [month: string]: { midWeekDeafTotal: number; weekendDeafTotal: number };
+  } = {};
+
+  // Loop through the attendance data and group them by month and meeting type
+  attendanceData.forEach((record) => {
+    const month = getMonthAndYearFromDate(
+      record.date_mm_dd_yyyy || "Invalid Date",
+    );
+
+    // Initialize the month entry if it doesn't exist
+    if (!monthlyDeafTotals[month]) {
+      monthlyDeafTotals[month] = { midWeekDeafTotal: 0, weekendDeafTotal: 0 };
+    }
+
+    // Calculate the total for each record
+    const recordTotal = record.deaf ?? 0;
+
+    // Increment the total based on the meeting type
+    if (record.meeting_type?.toLowerCase().includes("midweek")) {
+      monthlyDeafTotals[month].midWeekDeafTotal += recordTotal; // Add attendees to midweek total
+    } else if (record.meeting_type?.toLowerCase().includes("weekend")) {
+      monthlyDeafTotals[month].weekendDeafTotal += recordTotal; // Add attendees to weekend total
+    }
+  });
+
+  return monthlyDeafTotals;
+};
+
+// Function to count overall totals per meeting type for each month
+export const calculateOverallTotals = (attendanceData: AttendanceRecord[]) => {
+  // Initialize an object to hold the totals per meeting type for each month
+  const monthlyTotals: {
+    [month: string]: { midWeekTotal: number; weekendTotal: number };
+  } = {};
+
+  // Loop through the attendance data and group them by month and meeting type
+  attendanceData.forEach((record) => {
+    const month = getMonthAndYearFromDate(
+      record.date_mm_dd_yyyy || "Invalid Date",
+    );
+
+    // Initialize the month entry if it doesn't exist
+    if (!monthlyTotals[month]) {
+      monthlyTotals[month] = { midWeekTotal: 0, weekendTotal: 0 };
+    }
+
+    // Use the total directly from the record
+    const recordTotal = record.total ?? 0; // Fallback to 0 if total is undefined
+
+    // Increment the total based on the meeting type
+    if (record.meeting_type?.toLowerCase().includes("midweek")) {
+      monthlyTotals[month].midWeekTotal += recordTotal; // Add attendees to midweek total
+    } else if (record.meeting_type?.toLowerCase().includes("weekend")) {
+      monthlyTotals[month].weekendTotal += recordTotal; // Add attendees to weekend total
+    }
+  });
+
+  return monthlyTotals;
+};
+
 // Function to handle attendance update
 export const handleAttendanceUpdate = async (
   localEditedData: AttendanceRecord | null,
