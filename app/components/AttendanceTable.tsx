@@ -124,17 +124,15 @@ const AttendanceTable = () => {
               </h3>
               <div className="flex flex-row items-center justify-center gap-4">
                 {/* added gap to space items */}
-                <div className="flex flex-col items-center justify-center gap-4">
+                <div className="flex flex-col items-center justify-center">
                   <div>{`Midweek Meetings: ${midWeekCount}`}</div>
                   <div>{`Overall Midweek Total: ${midWeekTotal}`}</div>
                   <div>{`Overall Deaf Total: ${midWeekDeafTotal}`}</div>
                 </div>
                 <div className="h-[14vw] w-[0.1vw] bg-slate-50" />
                 {/* Horizontal line */}
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className="flex flex-col items-center justify-center gap-4">
-                    {`Weekend Meetings: ${weekendCount}`}
-                  </div>
+                <div className="flex flex-col items-center justify-center">
+                  <div>{`Weekend Meetings: ${weekendCount}`}</div>
                   <div>{`Overall Weekend Total: ${weekendTotal}`}</div>
                   <div>{`Overall Deaf Total: ${weekendDeafTotal}`}</div>
                 </div>
