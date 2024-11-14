@@ -19,7 +19,6 @@ import {
   handleAttendanceDelete,
   loadLatestAttendanceData,
   subscribeToAttendance,
-  getMonthAndYearFromDate,
 } from "./functions/attendanceUtils";
 import { AttendanceRecord } from "./types/attendanceTypes";
 
@@ -77,6 +76,8 @@ const AttendanceTable = () => {
       setEditingRow,
       setLocalEditedData,
     );
+    setIsSaveButtonClicked(true);
+    setTimeout(() => setIsSaveButtonClicked(false), 1000); // Trigger the LogDisplay
   };
 
   const handleCancelEdit = () => {
@@ -94,6 +95,8 @@ const AttendanceTable = () => {
       setLocalEditedData,
       setIsSaveButtonClicked,
     );
+    setIsSaveButtonClicked(true);
+    setTimeout(() => setIsSaveButtonClicked(false), 1000); // Trigger the LogDisplay
   };
 
   return (

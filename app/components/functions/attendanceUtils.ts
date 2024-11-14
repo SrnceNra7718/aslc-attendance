@@ -48,6 +48,8 @@ export const getMonthAndYearFromDate = (date: string | undefined): string => {
   return `${monthName} ${year}`;
 };
 
+/*************************** for AttendanceTable.tsx ********************************** */
+
 import { AttendanceRecord } from "../types/attendanceTypes";
 // import { getMonthAndYearFromDate } from "./getMonthAndYearFromDate";
 import {
@@ -111,7 +113,6 @@ export const handleAttendanceUpdate = async (
   if (localEditedData) {
     const { date_mm_dd_yyyy, hearing, deaf, total, meeting_type } =
       localEditedData;
-
     const originalData = attendanceData.find(
       (record) => record.date_mm_dd_yyyy === date_mm_dd_yyyy,
     );
@@ -136,7 +137,6 @@ export const handleAttendanceUpdate = async (
         total,
         meeting_type,
       );
-
       setAttendanceData((prevData) =>
         prevData.map((item) =>
           item.date_mm_dd_yyyy === date_mm_dd_yyyy
@@ -144,8 +144,7 @@ export const handleAttendanceUpdate = async (
             : item,
         ),
       );
-
-      setLogMessage("Attendance updated successfully.");
+      setLogMessage("Attendance record updated successfully.");
       setEditingRow(null);
       setLocalEditedData(null);
     } catch (error) {

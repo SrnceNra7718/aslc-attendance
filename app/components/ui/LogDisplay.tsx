@@ -11,18 +11,29 @@ export default function LogDisplay({
   isButtonClicked,
 }: LogDisplayProps) {
   const [isVisible, setIsVisible] = useState(false); // Manages the visibility state
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null); // Holds the timer reference
 
   useEffect(() => {
-    if (isButtonClicked) {
-      setIsVisible(true); // Display log message if button is clicked
+    if (isButtonClicked && message) {
+      setIsVisible(true); // Show log message if button is clicked
+
+      // Clear any existing timer to reset the visibility duration
+      if (timer) {
+        clearTimeout(timer);
+      }
+
+      // Set a new timer for 3 seconds
+      const newTimer = setTimeout(() => {
+        setIsVisible(false); // Hide log message after 3 seconds
+      }, 3000);
+      setTimer(newTimer); // Update the timer reference
     }
 
-    const timer = setTimeout(() => {
-      setIsVisible(false); // Hide log message after 3 seconds
-    }, 3000);
-
-    return () => clearTimeout(timer); // Clear timeout on cleanup
-  }, [message, isButtonClicked]);
+    // Clear the timer on component unmount to avoid memory leaks
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [message, isButtonClicked]); // Re-run on message or button click change
 
   if (!isVisible) return null; // Render nothing if not visible
 
