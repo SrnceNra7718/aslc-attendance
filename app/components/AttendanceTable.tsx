@@ -104,6 +104,17 @@ const AttendanceTable = () => {
     >,
   );
 
+  // Function to count meetings per meeting type for each month
+  const countTotalMeetings = (monthData: {
+    midWeek: AttendanceRecord[];
+    weekend: AttendanceRecord[];
+  }) => {
+    const midWeekCount = monthData.midWeek.length;
+    const weekendCount = monthData.weekend.length;
+
+    return { midWeekCount, weekendCount };
+  };
+
   // Columns definition for NextUI Table
   const columns = [
     { key: "date_mm_dd_yyyy", label: "Date" },
@@ -229,13 +240,19 @@ const AttendanceTable = () => {
       <h1 className="mb-2 text-[5vw] font-bold max-sm:text-[7vw]">
         Attendance Updates
       </h1>
-      {Object.entries(monthlyAttendance).map(
-        ([month, { midWeek, weekend }]) => (
+      {Object.entries(monthlyAttendance).map(([month, monthData]) => {
+        const { midWeekCount, weekendCount } = countTotalMeetings(monthData);
+        return (
           <div
             key={month}
             className="m-[3vw] flex scale-95 flex-col items-center justify-center rounded-3xl bg-accent py-[3vw]"
           >
             <h2 className="mb-0.5 text-[3vw] font-bold max-sm:text-[5vw]">{`${month}`}</h2>
+            <div className="mb-3 text-[2vw] font-normal max-sm:text-[4vw]">
+              Number of Midweek Meetings: {midWeekCount}
+              <br />
+              Number of Weekend Meetings: {weekendCount}
+            </div>
             {/* Display Mid-week Meetings */}
             <h2 className="mt-1 text-[2vw] font-bold max-sm:text-[4vw]">{`Mid-week Meetings`}</h2>
             <Table
@@ -253,7 +270,7 @@ const AttendanceTable = () => {
                 )}
               </TableHeader>
               <TableBody>
-                {midWeek.map((item) => (
+                {monthData.midWeek.map((item) => (
                   <TableRow key={item.date_mm_dd_yyyy} className="text-[1vw]">
                     <TableCell>{item.date_mm_dd_yyyy ?? "N/A"}</TableCell>
                     <TableCell>{item.meeting_type ?? "N/A"}</TableCell>
@@ -361,7 +378,7 @@ const AttendanceTable = () => {
                 )}
               </TableHeader>
               <TableBody>
-                {weekend.map((item) => (
+                {monthData.weekend.map((item) => (
                   <TableRow key={item.date_mm_dd_yyyy} className="text-[1vw]">
                     <TableCell>{item.date_mm_dd_yyyy ?? "N/A"}</TableCell>
                     <TableCell>{item.meeting_type ?? "N/A"}</TableCell>
@@ -453,8 +470,9 @@ const AttendanceTable = () => {
               </TableBody>
             </Table>
           </div>
-        ),
-      )}
+        );
+      })}
+
       {logMessage && (
         <LogDisplay
           message={logMessage}
