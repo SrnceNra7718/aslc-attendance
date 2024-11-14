@@ -113,10 +113,18 @@ const AttendanceTable = () => {
           >
             <h2 className="mb-0.5 text-[3vw] font-bold max-sm:text-[5vw]">{`${month}`}</h2>
             <div className="mb-3 text-[2vw] font-normal max-sm:text-[4vw]">
-              Number of Midweek Meetings: {midWeekCount}
-              <br />
-              Number of Weekend Meetings: {weekendCount}
+              <h3 className="mb-3 flex items-center justify-center text-[2.5vw] font-normal max-sm:text-[4.5vw]">
+                Reports:
+              </h3>
+              <div className="flex flex-row items-center justify-center gap-4">
+                {/* added gap to space items */}
+                <div>Midweek Meetings: {midWeekCount}</div>
+                <div className="h-[14vw] w-[0.1vw] bg-slate-50" />
+                {/* Horizontal line */}
+                <div>Weekend Meetings: {weekendCount}</div>
+              </div>
             </div>
+
             {/* Display Mid-week Meetings */}
             <h2 className="mt-1 text-[2vw] font-bold max-sm:text-[4vw]">{`Mid-week Meetings`}</h2>
             <Table
