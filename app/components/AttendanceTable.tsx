@@ -69,8 +69,6 @@ const AttendanceTable = () => {
   };
 
   const handleSave = async () => {
-    setTimeout(() => setIsSaveButtonClicked(false), 1000);
-
     handleAttendanceUpdate(
       localEditedData,
       attendanceData,
@@ -87,8 +85,6 @@ const AttendanceTable = () => {
   };
 
   const handleDelete = async (date_mm_dd_yyyy: string) => {
-    setTimeout(() => setIsSaveButtonClicked(false), 1000);
-
     handleAttendanceDelete(
       date_mm_dd_yyyy,
       attendanceData,
