@@ -49,7 +49,9 @@ const AttendanceTable = () => {
     // Subscribe to real-time changes in attendance
     const unsubscribe = subscribeToAttendanceChanges((updatedData: any) => {
       // When data changes, update the whole attendanceData
-      setAttendanceData([updatedData]);
+      console.log("updatedData " + updatedData); // Check if updatedData contains the date_mm_dd_yyyy
+
+      setAttendanceData(updatedData);
     });
 
     // Clean up subscription when the component unmounts
