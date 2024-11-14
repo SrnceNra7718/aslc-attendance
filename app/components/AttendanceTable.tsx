@@ -1,13 +1,6 @@
-// AttendanceTable.tsx
-"use client"; // Indicates that this component is a client component
+"use client";
 import { useEffect, useState } from "react";
-import {
-  deleteAttendance,
-  fetchLatestAttendance,
-  subscribeToAttendanceChanges,
-  updateAttendance,
-} from "@/utils/supabase/database"; // Function to update attendance
-
+import { Pencil, Save, Trash2, XCircle } from "lucide-react";
 import {
   Table,
   TableHeader,
@@ -17,103 +10,36 @@ import {
   TableCell,
   Tooltip,
   Input,
-} from "@nextui-org/react"; // Ensure correct imports for NextUI
-import { Pencil, Save, Trash2, XCircle } from "lucide-react"; // Import Pencil icon from lucide-react
+} from "@nextui-org/react";
 import LogDisplay from "./ui/LogDisplay";
-import { getMonthAndYearFromDate } from "./functions/attendanceUtils";
-
-// Define the interface for each attendance record
-interface AttendanceRecord {
-  date_mm_dd_yyyy: string;
-  meeting_type: string;
-  deaf: number;
-  hearing: number;
-  total: number;
-}
+import {
+  groupAttendanceByMonth,
+  countTotalMeetings,
+  handleAttendanceUpdate,
+  handleAttendanceDelete,
+  loadLatestAttendanceData,
+  subscribeToAttendance,
+  getMonthAndYearFromDate,
+} from "./functions/attendanceUtils";
+import { AttendanceRecord } from "./types/attendanceTypes";
 
 const AttendanceTable = () => {
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
-  const [editingRow, setEditingRow] = useState<string | null>(null); // State for the row being edited
+  const [editingRow, setEditingRow] = useState<string | null>(null);
   const [localEditedData, setLocalEditedData] =
-    useState<AttendanceRecord | null>(null); // State for input fields
-  const [logMessage, setLogMessage] = useState<string>(""); // State for the log message
+    useState<AttendanceRecord | null>(null);
+  const [logMessage, setLogMessage] = useState<string>("");
   const [isSaveButtonClicked, setIsSaveButtonClicked] = useState(false);
 
   useEffect(() => {
-    const loadLatestData = async () => {
-      const latestData = await fetchLatestAttendance();
-      setAttendanceData(latestData || []); // Ensure default empty array if undefined
-    };
+    loadLatestAttendanceData(setAttendanceData);
 
-    loadLatestData();
-
-    // Subscribe to real-time changes in attendance
-
-    const unsubscribe = subscribeToAttendanceChanges(
-      (updatedData: AttendanceRecord[]) => {
-        // Accept an array of AttendanceRecords
-        setAttendanceData((prevData) => {
-          const updatedAttendance = [...prevData];
-
-          updatedData.forEach((record) => {
-            const existingRecordIndex = updatedAttendance.findIndex(
-              (item) => item.date_mm_dd_yyyy === record.date_mm_dd_yyyy,
-            );
-
-            if (existingRecordIndex !== -1) {
-              // Update the existing record
-              updatedAttendance[existingRecordIndex] = record;
-            } else {
-              // Add the new record if it doesn't exist
-              updatedAttendance.push(record);
-            }
-          });
-
-          return updatedAttendance;
-        });
-      },
-    );
+    const unsubscribe = subscribeToAttendance(setAttendanceData);
 
     return () => unsubscribe();
   }, []);
 
-  // Group records by both month and meeting type (mid-week and weekend)
-  const monthlyAttendance = attendanceData.reduce(
-    (acc, item) => {
-      const month = getMonthAndYearFromDate(
-        item.date_mm_dd_yyyy || "Invalid Date",
-      );
-
-      const isWeekend =
-        item.meeting_type?.toLowerCase().includes("weekend") || false;
-      if (!acc[month]) {
-        acc[month] = { midWeek: [], weekend: [] };
-      }
-
-      if (isWeekend) {
-        acc[month].weekend.push(item);
-      } else {
-        acc[month].midWeek.push(item);
-      }
-
-      return acc;
-    },
-    {} as Record<
-      string,
-      { midWeek: AttendanceRecord[]; weekend: AttendanceRecord[] }
-    >,
-  );
-
-  // Function to count meetings per meeting type for each month
-  const countTotalMeetings = (monthData: {
-    midWeek: AttendanceRecord[];
-    weekend: AttendanceRecord[];
-  }) => {
-    const midWeekCount = monthData.midWeek.length;
-    const weekendCount = monthData.weekend.length;
-
-    return { midWeekCount, weekendCount };
-  };
+  const monthlyAttendance = groupAttendanceByMonth(attendanceData);
 
   // Columns definition for NextUI Table
   const columns = [
@@ -124,7 +50,6 @@ const AttendanceTable = () => {
     { key: "total", label: "Total" },
     { key: "edit", label: "Edit" },
   ];
-
   const handleEditClick = (rowKey: string, rowData: AttendanceRecord) => {
     setEditingRow(rowKey); // Set the current row as editable
     setLocalEditedData({ ...rowData }); // Copy row data to localEditedData for editing
@@ -144,50 +69,16 @@ const AttendanceTable = () => {
   };
 
   const handleSave = async () => {
-    if (localEditedData) {
-      const { date_mm_dd_yyyy, hearing, deaf, total, meeting_type } =
-        localEditedData;
+    setTimeout(() => setIsSaveButtonClicked(false), 1000);
 
-      const originalData = attendanceData.find(
-        (record) => record.date_mm_dd_yyyy === date_mm_dd_yyyy,
-      );
-
-      if (!originalData) {
-        setLogMessage("Original record not found. Submission aborted.");
-        return;
-      }
-
-      const hasChanges =
-        hearing !== originalData.hearing || deaf !== originalData.deaf;
-      if (!hasChanges) {
-        setLogMessage("No changes detected. Submission aborted.");
-        return;
-      }
-
-      try {
-        await updateAttendance(
-          date_mm_dd_yyyy,
-          hearing,
-          deaf,
-          total,
-          meeting_type,
-        );
-
-        setAttendanceData((prevData) =>
-          prevData.map((item) =>
-            item.date_mm_dd_yyyy === date_mm_dd_yyyy
-              ? { ...item, hearing, deaf, total }
-              : item,
-          ),
-        );
-
-        setLogMessage("Attendance updated successfully.");
-        setEditingRow(null);
-        setLocalEditedData(null);
-      } catch (error) {
-        setLogMessage(`Error during attendance submission: ${error}`);
-      }
-    }
+    handleAttendanceUpdate(
+      localEditedData,
+      attendanceData,
+      setAttendanceData,
+      setLogMessage,
+      setEditingRow,
+      setLocalEditedData,
+    );
   };
 
   const handleCancelEdit = () => {
@@ -196,43 +87,17 @@ const AttendanceTable = () => {
   };
 
   const handleDelete = async (date_mm_dd_yyyy: string) => {
-    try {
-      // Find the record to be deleted based on the date_mm_dd_yyyy
-      const recordToDelete = attendanceData.find(
-        (record) => record.date_mm_dd_yyyy === date_mm_dd_yyyy,
-      );
+    setTimeout(() => setIsSaveButtonClicked(false), 1000);
 
-      if (!recordToDelete) {
-        console.error("Record not found for deletion.");
-        setLogMessage("Record not found for deletion.");
-        setIsSaveButtonClicked(true);
-        setTimeout(() => setIsSaveButtonClicked(false), 1000);
-        return;
-      }
-
-      // Perform the deletion
-      const isDeleted = await deleteAttendance(date_mm_dd_yyyy);
-
-      if (isDeleted) {
-        // Update state to remove deleted record from the table
-        setAttendanceData((prevData) =>
-          prevData.filter((item) => item.date_mm_dd_yyyy !== date_mm_dd_yyyy),
-        );
-        setLogMessage("Attendance record deleted successfully.");
-      } else {
-        console.error("Failed to delete attendance record.");
-        setLogMessage("Failed to delete attendance record.");
-      }
-      setIsSaveButtonClicked(true);
-      setTimeout(() => setIsSaveButtonClicked(false), 1000);
-
-      // Clear any editing state after delete
-      setEditingRow(null);
-      setLocalEditedData(null);
-    } catch (error) {
-      setLogMessage(`Error during deletion: ${error}`);
-      console.error("Error during deletion:", error);
-    }
+    handleAttendanceDelete(
+      date_mm_dd_yyyy,
+      attendanceData,
+      setAttendanceData,
+      setLogMessage,
+      setEditingRow,
+      setLocalEditedData,
+      setIsSaveButtonClicked,
+    );
   };
 
   return (
@@ -361,6 +226,7 @@ const AttendanceTable = () => {
                 ))}
               </TableBody>
             </Table>
+
             {/* Display Weekend Meetings */}
             <h2 className="mt-3 text-[2vw] font-bold max-sm:text-[4vw]">{`Weekend Meetings`}</h2>
             <Table
