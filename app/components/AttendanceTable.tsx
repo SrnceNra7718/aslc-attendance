@@ -1,7 +1,6 @@
 // AttendanceTable.tsx
 "use client"; // Indicates that this component is a client component
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client"; // Supabase client
 import {
   deleteAttendance,
   fetchLatestAttendance,
@@ -207,7 +206,7 @@ const AttendanceTable = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-[14vw]">
+    <div className="flex flex-col items-center justify-center py-[14vw]">
       <h1 className="mb-2 text-[5vw] font-bold max-sm:text-[7vw]">
         Attendance Updates
       </h1>
@@ -215,7 +214,7 @@ const AttendanceTable = () => {
         ([month, { midWeek, weekend }]) => (
           <div
             key={month}
-            className="m-[3vw] flex flex-col items-center justify-center rounded-3xl bg-accent py-[3vw]"
+            className="m-[3vw] flex scale-95 flex-col items-center justify-center rounded-3xl bg-accent py-[3vw]"
           >
             <h2 className="mb-0.5 text-[3vw] font-bold max-sm:text-[5vw]">{`${month}`}</h2>
             {/* Display Mid-week Meetings */}
