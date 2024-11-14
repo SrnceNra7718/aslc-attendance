@@ -1,9 +1,18 @@
 // /functions/attendanceUtils.ts
-export const getMonthAndYearFromDate = (date: string): string => {
-  // Extract month and year parts from date string "mm_dd_yyyy"
-  const [month, , year] = date.split("_");
+export const getMonthAndYearFromDate = (date: string | undefined): string => {
+  if (!date) {
+    console.warn("Invalid date input:", date);
+    return "Unknown Date";
+  }
 
-  // Convert month number (as string) to month name
+  const parts = date.split("_");
+  if (parts.length !== 3) {
+    console.warn("Date format mismatch:", date);
+    return "Unknown Date";
+  }
+
+  const [month, , year] = parts;
+
   const monthName = (() => {
     switch (month) {
       case "01":
@@ -31,9 +40,10 @@ export const getMonthAndYearFromDate = (date: string): string => {
       case "12":
         return "December";
       default:
-        return "Unknown"; // Handle unexpected values
+        console.warn("Unexpected month value:", month);
+        return "Unknown Month";
     }
   })();
 
-  return `${monthName} ${year}`; // Return formatted month and year
+  return `${monthName} ${year}`;
 };

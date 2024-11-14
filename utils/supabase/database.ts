@@ -38,9 +38,18 @@ export const checkExistingAttendance = async (formattedDate: string) => {
 
   return data;
 };
+// Define the interface for each attendance record
+interface AttendanceRecord {
+  date_mm_dd_yyyy: string;
+  meeting_type: string;
+  deaf: number;
+  hearing: number;
+  total: number;
+}
+
 // Function to subscribe to attendance table changes and get all data
 export const subscribeToAttendanceChanges = (
-  callback: (updatedData: any[]) => void, // Expecting an array of data
+  callback: (updatedData: AttendanceRecord[]) => void, // Expecting an array of AttendanceRecord
 ) => {
   // Subscribe to all changes in the "attendance" table
   const attendanceChannel = supabase
@@ -57,14 +66,17 @@ export const subscribeToAttendanceChanges = (
             .from("attendance")
             .select("*")
             .order("date_mm_dd_yyyy", { ascending: true }); // Order by date ascending
-          // Adjust the select if you need specific columns
+
           if (error) {
             console.error("Error fetching data:", error);
             return;
           }
 
-          // Pass the full data (not just the changed data) to the callback function
-          callback(data); // Send the complete set of data to the callback
+          // Type assertion to ensure data conforms to AttendanceRecord[]
+          const typedData = data as AttendanceRecord[];
+
+          // Pass the typed data to the callback function
+          callback(typedData);
         } catch (err) {
           console.error("Error during full data fetch:", err);
         }

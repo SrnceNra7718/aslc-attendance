@@ -34,64 +34,75 @@ interface AttendanceRecord {
 const AttendanceTable = () => {
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
   const [editingRow, setEditingRow] = useState<string | null>(null); // State for the row being edited
-  const [localEditedData, setLocalEditedData] = useState<any>(null); // State for input fields
+  const [localEditedData, setLocalEditedData] =
+    useState<AttendanceRecord | null>(null); // State for input fields
   const [logMessage, setLogMessage] = useState<string>(""); // State for the log message
-  const [isSaveButtonClicked, setIsSaveButtonClicked] = useState(false); // State for save button click
+  const [isSaveButtonClicked, setIsSaveButtonClicked] = useState(false);
 
   useEffect(() => {
     const loadLatestData = async () => {
       const latestData = await fetchLatestAttendance();
-      setAttendanceData(latestData); // Set all data initially
+      setAttendanceData(latestData || []); // Ensure default empty array if undefined
     };
 
-    loadLatestData(); // Fetch the initial data when the component mounts
+    loadLatestData();
 
     // Subscribe to real-time changes in attendance
-    const unsubscribe = subscribeToAttendanceChanges((updatedData: any) => {
-      setAttendanceData((prevData) => {
-        // Check if the record exists in the previous data
-        const existingRecordIndex = prevData.findIndex(
-          (item) => item.date_mm_dd_yyyy === updatedData.date_mm_dd_yyyy,
-        );
 
-        if (existingRecordIndex !== -1) {
-          // Update the existing record
+    const unsubscribe = subscribeToAttendanceChanges(
+      (updatedData: AttendanceRecord[]) => {
+        // Accept an array of AttendanceRecords
+        setAttendanceData((prevData) => {
           const updatedAttendance = [...prevData];
-          updatedAttendance[existingRecordIndex] = updatedData;
-          return updatedAttendance;
-        } else {
-          // If the record doesn't exist, add it
-          return [...prevData, updatedData];
-        }
-      });
-    });
 
-    // Clean up subscription when the component unmounts
+          updatedData.forEach((record) => {
+            const existingRecordIndex = updatedAttendance.findIndex(
+              (item) => item.date_mm_dd_yyyy === record.date_mm_dd_yyyy,
+            );
+
+            if (existingRecordIndex !== -1) {
+              // Update the existing record
+              updatedAttendance[existingRecordIndex] = record;
+            } else {
+              // Add the new record if it doesn't exist
+              updatedAttendance.push(record);
+            }
+          });
+
+          return updatedAttendance;
+        });
+      },
+    );
+
     return () => unsubscribe();
   }, []);
 
   // Group records by both month and meeting type (mid-week and weekend)
-  const monthlyAttendance = attendanceData.reduce<{
-    [month: string]: {
-      midWeek: AttendanceRecord[];
-      weekend: AttendanceRecord[];
-    };
-  }>((acc, item) => {
-    const month = getMonthAndYearFromDate(item.date_mm_dd_yyyy);
-    const isWeekend = item.meeting_type.toLowerCase().includes("weekend");
+  const monthlyAttendance = attendanceData.reduce(
+    (acc, item) => {
+      const month = getMonthAndYearFromDate(
+        item.date_mm_dd_yyyy || "Invalid Date",
+      );
 
-    if (!acc[month]) {
-      acc[month] = { midWeek: [], weekend: [] };
-    }
+      const isWeekend =
+        item.meeting_type?.toLowerCase().includes("weekend") || false;
+      if (!acc[month]) {
+        acc[month] = { midWeek: [], weekend: [] };
+      }
 
-    if (isWeekend) {
-      acc[month].weekend.push(item);
-    } else {
-      acc[month].midWeek.push(item);
-    }
+      if (isWeekend) {
+        acc[month].weekend.push(item);
+      } else {
+        acc[month].midWeek.push(item);
+      }
 
-    return acc;
-  }, {});
+      return acc;
+    },
+    {} as Record<
+      string,
+      { midWeek: AttendanceRecord[]; weekend: AttendanceRecord[] }
+    >,
+  );
 
   // Columns definition for NextUI Table
   const columns = [
@@ -103,81 +114,67 @@ const AttendanceTable = () => {
     { key: "edit", label: "Edit" },
   ];
 
-  const handleEditClick = (rowKey: string, rowData: any) => {
+  const handleEditClick = (rowKey: string, rowData: AttendanceRecord) => {
     setEditingRow(rowKey); // Set the current row as editable
     setLocalEditedData({ ...rowData }); // Copy row data to localEditedData for editing
   };
 
-  const handleInputChange = (key: string, value: string) => {
+  const handleInputChange = (key: keyof AttendanceRecord, value: string) => {
     // Ensure the value is not negative and default to 0 if empty or invalid
     const numberValue = Math.max(0, Number(value) || 0);
-    setLocalEditedData((prevData: any) => {
-      const updatedData = { ...prevData, [key]: numberValue };
-      updatedData.total = updatedData.hearing + updatedData.deaf; // Update total in real-time
-      return updatedData; // Return updated data
+    setLocalEditedData((prevData) => {
+      if (prevData) {
+        const updatedData = { ...prevData, [key]: numberValue };
+        updatedData.total = updatedData.hearing + updatedData.deaf;
+        return updatedData;
+      }
+      return null;
     });
   };
 
   const handleSave = async () => {
     if (localEditedData) {
-      const formattedDate = localEditedData.date_mm_dd_yyyy;
-      const hearing = Number(localEditedData.hearing) || 0;
-      const deaf = Number(localEditedData.deaf) || 0;
-      const total = localEditedData.total;
-      const meetingType = localEditedData.meeting_type;
+      const { date_mm_dd_yyyy, hearing, deaf, total, meeting_type } =
+        localEditedData;
 
-      // Retrieve the original values from attendanceData
       const originalData = attendanceData.find(
-        (record) => record.date_mm_dd_yyyy === formattedDate,
+        (record) => record.date_mm_dd_yyyy === date_mm_dd_yyyy,
       );
 
       if (!originalData) {
-        console.error("Original record not found. Submission aborted.");
         setLogMessage("Original record not found. Submission aborted.");
-        setIsSaveButtonClicked(true);
-        setTimeout(() => setIsSaveButtonClicked(false), 1000);
         return;
       }
 
-      // Validate that the values have changed compared to the original values
       const hasChanges =
         hearing !== originalData.hearing || deaf !== originalData.deaf;
-
       if (!hasChanges) {
-        console.log("No changes detected. Submission aborted.");
         setLogMessage("No changes detected. Submission aborted.");
-        setIsSaveButtonClicked(true);
-        setTimeout(() => setIsSaveButtonClicked(false), 1000);
         return;
       }
 
       try {
-        // Update existing record in the database
         await updateAttendance(
-          formattedDate,
+          date_mm_dd_yyyy,
           hearing,
           deaf,
           total,
-          meetingType,
+          meeting_type,
         );
-        setLogMessage("Attendance updated successfully.");
-        setIsSaveButtonClicked(true);
-        setTimeout(() => setIsSaveButtonClicked(false), 1000);
 
-        // Update the attendanceData state with the modified values
         setAttendanceData((prevData) =>
           prevData.map((item) =>
-            item.date_mm_dd_yyyy === formattedDate
+            item.date_mm_dd_yyyy === date_mm_dd_yyyy
               ? { ...item, hearing, deaf, total }
               : item,
           ),
         );
 
+        setLogMessage("Attendance updated successfully.");
         setEditingRow(null);
         setLocalEditedData(null);
       } catch (error) {
         setLogMessage(`Error during attendance submission: ${error}`);
-        console.error("Error during attendance submission:", error);
       }
     }
   };
@@ -269,7 +266,7 @@ const AttendanceTable = () => {
                           value={
                             localEditedData?.deaf === 0
                               ? "0"
-                              : localEditedData?.deaf || item.deaf
+                              : (localEditedData?.deaf ?? item.deaf).toString()
                           } // Show 0 explicitly if the value is 0
                           onChange={(e) =>
                             handleInputChange("deaf", e.target.value)
@@ -289,8 +286,10 @@ const AttendanceTable = () => {
                           value={
                             localEditedData?.hearing === 0
                               ? "0"
-                              : localEditedData?.hearing || item.hearing
-                          } // Show 0 explicitly if the value is 0
+                              : (
+                                  localEditedData?.hearing ?? item.hearing
+                                ).toString()
+                          }
                           onChange={(e) =>
                             handleInputChange("hearing", e.target.value)
                           }
@@ -375,8 +374,8 @@ const AttendanceTable = () => {
                           value={
                             localEditedData?.deaf === 0
                               ? "0"
-                              : localEditedData?.deaf || item.deaf
-                          } // Show 0 explicitly if the value is 0
+                              : (localEditedData?.deaf ?? item.deaf).toString()
+                          }
                           onChange={(e) =>
                             handleInputChange("deaf", e.target.value)
                           }
@@ -395,8 +394,10 @@ const AttendanceTable = () => {
                           value={
                             localEditedData?.hearing === 0
                               ? "0"
-                              : localEditedData?.hearing || item.hearing
-                          } // Show 0 explicitly if the value is 0
+                              : (
+                                  localEditedData?.hearing ?? item.hearing
+                                ).toString()
+                          }
                           onChange={(e) =>
                             handleInputChange("hearing", e.target.value)
                           }
