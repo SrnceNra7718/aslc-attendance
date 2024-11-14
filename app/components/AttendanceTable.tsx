@@ -48,10 +48,22 @@ const AttendanceTable = () => {
 
     // Subscribe to real-time changes in attendance
     const unsubscribe = subscribeToAttendanceChanges((updatedData: any) => {
-      // When data changes, update the whole attendanceData
-      console.log("updatedData " + updatedData); // Check if updatedData contains the date_mm_dd_yyyy
+      setAttendanceData((prevData) => {
+        // Check if the record exists in the previous data
+        const existingRecordIndex = prevData.findIndex(
+          (item) => item.date_mm_dd_yyyy === updatedData.date_mm_dd_yyyy,
+        );
 
-      setAttendanceData(updatedData);
+        if (existingRecordIndex !== -1) {
+          // Update the existing record
+          const updatedAttendance = [...prevData];
+          updatedAttendance[existingRecordIndex] = updatedData;
+          return updatedAttendance;
+        } else {
+          // If the record doesn't exist, add it
+          return [...prevData, updatedData];
+        }
+      });
     });
 
     // Clean up subscription when the component unmounts
