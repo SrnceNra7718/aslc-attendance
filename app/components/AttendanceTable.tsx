@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   deleteAttendance,
   fetchLatestAttendance,
+  subscribeToAttendanceChanges,
   updateAttendance,
 } from "@/utils/supabase/database"; // Function to update attendance
 
@@ -39,13 +40,20 @@ const AttendanceTable = () => {
 
   useEffect(() => {
     const loadLatestData = async () => {
-      const latestData = await fetchLatestAttendance(); // Fetch latest data
-      setAttendanceData(latestData); // Update attendance data state
+      const latestData = await fetchLatestAttendance();
+      setAttendanceData(latestData); // Set all data initially
     };
-    loadLatestData();
 
-    const intervalId = setInterval(loadLatestData, 10000); // Refresh every 10 seconds
-    return () => clearInterval(intervalId); // Clear interval on component unmount
+    loadLatestData(); // Fetch the initial data when the component mounts
+
+    // Subscribe to real-time changes in attendance
+    const unsubscribe = subscribeToAttendanceChanges((updatedData: any) => {
+      // When data changes, update the whole attendanceData
+      setAttendanceData([updatedData]);
+    });
+
+    // Clean up subscription when the component unmounts
+    return () => unsubscribe();
   }, []);
 
   // Group records by both month and meeting type (mid-week and weekend)

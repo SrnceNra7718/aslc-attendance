@@ -38,6 +38,45 @@ export const checkExistingAttendance = async (formattedDate: string) => {
 
   return data;
 };
+// Function to subscribe to attendance table changes and get all data
+export const subscribeToAttendanceChanges = (
+  callback: (updatedData: any[]) => void, // Expecting an array of data
+) => {
+  // Subscribe to all changes in the "attendance" table
+  const attendanceChannel = supabase
+    .channel("custom-all-channel") // Channel name can be customized
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "attendance" }, // Listen to all changes in the "attendance" table
+      async (payload) => {
+        console.log("Change received!", payload); // Log the payload (or use it in your application logic)
+
+        try {
+          // Fetch all data from the "attendance" table after any change occurs
+          const { data, error } = await supabase
+            .from("attendance")
+            .select("*")
+            .order("date_mm_dd_yyyy", { ascending: true }); // Order by date ascending
+          // Adjust the select if you need specific columns
+          if (error) {
+            console.error("Error fetching data:", error);
+            return;
+          }
+
+          // Pass the full data (not just the changed data) to the callback function
+          callback(data); // Send the complete set of data to the callback
+        } catch (err) {
+          console.error("Error during full data fetch:", err);
+        }
+      },
+    )
+    .subscribe(); // Start listening for changes
+
+  // Return a function that will unsubscribe when invoked
+  return () => {
+    attendanceChannel.unsubscribe();
+  };
+};
 
 /**
  * Insert a new attendance record.
