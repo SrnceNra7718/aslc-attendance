@@ -115,26 +115,45 @@ const AttendanceTable = () => {
         return (
           <div
             key={month}
-            className="m-[3vw] flex scale-95 flex-col items-center justify-center rounded-3xl bg-accent py-[3vw]"
+            className="m-[3vw] flex scale-95 flex-col items-center justify-center rounded-3xl border border-black bg-accent py-[3vw]"
           >
             <h2 className="mb-0.5 text-[3vw] font-bold max-sm:text-[5vw]">{`${month}`}</h2>
-            <div className="mb-3 text-[2vw] font-normal max-sm:text-[4vw]">
-              <h3 className="mb-3 flex items-center justify-center text-[2.5vw] font-normal max-sm:text-[4.5vw]">
+            <div className="mb-3 w-[80%] border border-black font-normal">
+              <h3 className="flex items-center justify-center text-[2.5vw] font-normal max-sm:text-[4.5vw]">
                 Reports:
               </h3>
-              <div className="flex flex-row items-center justify-center gap-4">
-                {/* added gap to space items */}
-                <div className="flex flex-col items-center justify-center">
-                  <div>{`Midweek Meetings: ${midWeekCount}`}</div>
-                  <div>{`Overall Midweek Total: ${midWeekTotal}`}</div>
-                  <div>{`Overall Deaf Total: ${midWeekDeafTotal}`}</div>
+              <div className="flex w-full flex-row items-center justify-center gap-4 border border-black text-[0.7rem] md:text-[1.5rem]">
+                {/* Midweek Section */}
+                <div className="flex w-full flex-col items-start justify-center">
+                  <div className="flex w-full flex-row justify-between">
+                    <span className="font-semibold">Midweek Meetings:</span>
+                    <span>{midWeekCount}</span>
+                  </div>
+                  <div className="flex w-full flex-row justify-between">
+                    <span className="font-semibold">Overall Midweek:</span>
+                    <span>{midWeekTotal}</span>
+                  </div>
+                  <div className="flex w-full flex-row justify-between">
+                    <span className="font-semibold">Overall Deaf Total:</span>
+                    <span>{midWeekDeafTotal}</span>
+                  </div>
                 </div>
-                <div className="h-[14vw] w-[0.1vw] bg-slate-50" />
-                {/* Horizontal line */}
-                <div className="flex flex-col items-center justify-center">
-                  <div>{`Weekend Meetings: ${weekendCount}`}</div>
-                  <div>{`Overall Weekend Total: ${weekendTotal}`}</div>
-                  <div>{`Overall Deaf Total: ${weekendDeafTotal}`}</div>
+                {/* Divider */}
+                <div className="h-[10vw] w-[0.1vw] bg-slate-50" />
+                {/* Weekend Section */}
+                <div className="flex w-full flex-col items-start justify-center">
+                  <div className="flex w-full flex-row justify-between">
+                    <span className="font-semibold">Weekend Meetings:</span>
+                    <span>{weekendCount}</span>
+                  </div>
+                  <div className="flex w-full flex-row justify-between">
+                    <span className="font-semibold">Overall Weekend:</span>
+                    <span>{weekendTotal}</span>
+                  </div>
+                  <div className="flex w-full flex-row justify-between">
+                    <span className="font-semibold">Overall Deaf Total:</span>
+                    <span>{weekendDeafTotal}</span>
+                  </div>
                 </div>
               </div>
             </div>

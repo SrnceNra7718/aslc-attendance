@@ -48,7 +48,19 @@ export const getMonthAndYearFromDate = (date: string | undefined): string => {
   return `${monthName} ${year}`;
 };
 
-/*************************** for AttendanceTable.tsx ********************************** */
+/*************************** for AttendanceTable.tsx ***********************************/
+
+// New function to calculate averages
+export const calculateAverage = (count: number, total: number) => {
+  // Avoid division by zero and return 0 when count is 0
+  if (count === 0) return 0;
+
+  // Calculate the average
+  const average = total / count;
+
+  // Return the average rounded to two decimal places
+  return Math.round(average * 100) / 100;
+};
 
 import { AttendanceRecord } from "../types/attendanceTypes";
 // import { getMonthAndYearFromDate } from "./getMonthAndYearFromDate";
