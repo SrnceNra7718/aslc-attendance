@@ -132,14 +132,14 @@ const AttendanceTable = () => {
         return (
           <div
             key={month}
-            className="m-[3vw] flex scale-95 flex-col items-center justify-center rounded-3xl border border-black bg-accent py-[3vw]"
+            className="m-[3vw] flex scale-95 flex-col items-center justify-center rounded-3xl bg-accent py-[3vw]"
           >
             <h2 className="mb-0.5 text-[3vw] font-bold max-sm:text-[5vw]">{`${month}`}</h2>
-            <div className="mb-3 w-[80%] border border-black font-normal">
+            <div className="mb-3 w-[80%] font-normal">
               <h3 className="flex items-center justify-center text-[2.5vw] font-normal max-sm:text-[4.5vw]">
                 Reports:
               </h3>
-              <div className="flex w-full flex-row items-center justify-center gap-4 border border-black text-[0.7rem] md:text-[1.5rem]">
+              <div className="flex w-full flex-row items-center justify-center gap-4 text-[0.7rem] md:text-[1.5rem]">
                 {/* Midweek Section */}
                 <div className="flex w-full flex-col items-start justify-center">
                   <div className="flex w-full flex-row justify-between">
@@ -147,7 +147,7 @@ const AttendanceTable = () => {
                     <span>{midWeekCount}</span>
                   </div>
                   <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Overall Midweek:</span>
+                    <span className="font-semibold">Overall:</span>
                     <span>{midWeekTotal}</span>
                   </div>
                   <div className="flex w-full flex-row justify-between">
@@ -156,7 +156,7 @@ const AttendanceTable = () => {
                   </div>
 
                   <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Overall Deaf Total:</span>
+                    <span className="font-semibold">Overall Deaf:</span>
                     <span>{midWeekDeafTotal}</span>
                   </div>
                   <div className="flex w-full flex-row justify-between">
@@ -165,7 +165,7 @@ const AttendanceTable = () => {
                   </div>
                 </div>
                 {/* Divider */}
-                <div className="h-[10vw] w-[0.1vw] bg-slate-50" />
+                <div className="h-[13vw] w-[0.1vw] bg-slate-50" />
                 {/* Weekend Section */}
                 <div className="flex w-full flex-col items-start justify-center">
                   <div className="flex w-full flex-row justify-between">
@@ -173,7 +173,7 @@ const AttendanceTable = () => {
                     <span>{weekendCount}</span>
                   </div>
                   <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Overall Weekend:</span>
+                    <span className="font-semibold">Overall:</span>
                     <span>{weekendTotal}</span>
                   </div>
                   <div className="flex w-full flex-row justify-between">
@@ -182,7 +182,7 @@ const AttendanceTable = () => {
                   </div>
 
                   <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Overall Deaf Total:</span>
+                    <span className="font-semibold">Overall Deaf:</span>
                     <span>{weekendDeafTotal}</span>
                   </div>
                   <div className="flex w-full flex-row justify-between">
