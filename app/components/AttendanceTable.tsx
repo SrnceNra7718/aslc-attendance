@@ -20,6 +20,8 @@ import {
   subscribeToAttendance,
   calculateOverallTotals,
   calculateDeafTotals,
+  calculateAverage,
+  calculateDeafAverage,
 } from "./functions/attendanceUtils";
 import { AttendanceRecord } from "./types/attendanceTypes";
 
@@ -112,6 +114,21 @@ const AttendanceTable = () => {
         const { midWeekTotal, weekendTotal } = monthlyTotals[month];
         const { midWeekDeafTotal, weekendDeafTotal } = monthlyDeafTotals[month];
 
+        // Calculate midweek average
+        const midWeekAverage = calculateAverage(midWeekCount, midWeekTotal);
+        // Calculate weekend average
+        const weekendAverage = calculateAverage(weekendCount, weekendTotal);
+
+        // Calculate deaf averages
+        const midWeekDeafAverage = calculateDeafAverage(
+          midWeekCount,
+          midWeekDeafTotal,
+        );
+        const weekendDeafAverage = calculateDeafAverage(
+          weekendCount,
+          weekendDeafTotal,
+        );
+
         return (
           <div
             key={month}
@@ -134,8 +151,17 @@ const AttendanceTable = () => {
                     <span>{midWeekTotal}</span>
                   </div>
                   <div className="flex w-full flex-row justify-between">
+                    <span className="font-semibold">Average:</span>
+                    <span>{midWeekAverage}</span>
+                  </div>
+
+                  <div className="flex w-full flex-row justify-between">
                     <span className="font-semibold">Overall Deaf Total:</span>
                     <span>{midWeekDeafTotal}</span>
+                  </div>
+                  <div className="flex w-full flex-row justify-between">
+                    <span className="font-semibold">Deaf Average:</span>
+                    <span>{midWeekDeafAverage}</span>
                   </div>
                 </div>
                 {/* Divider */}
@@ -151,8 +177,17 @@ const AttendanceTable = () => {
                     <span>{weekendTotal}</span>
                   </div>
                   <div className="flex w-full flex-row justify-between">
+                    <span className="font-semibold">Average:</span>
+                    <span>{weekendAverage}</span>
+                  </div>
+
+                  <div className="flex w-full flex-row justify-between">
                     <span className="font-semibold">Overall Deaf Total:</span>
                     <span>{weekendDeafTotal}</span>
+                  </div>
+                  <div className="flex w-full flex-row justify-between">
+                    <span className="font-semibold">Deaf Average:</span>
+                    <span>{weekendDeafAverage}</span>
                   </div>
                 </div>
               </div>

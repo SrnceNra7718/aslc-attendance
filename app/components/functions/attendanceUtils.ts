@@ -55,11 +55,16 @@ export const calculateAverage = (count: number, total: number) => {
   // Avoid division by zero and return 0 when count is 0
   if (count === 0) return 0;
 
-  // Calculate the average
-  const average = total / count;
+  // Calculate the average and round to the nearest whole number
+  return Math.round(total / count);
+};
 
-  // Return the average rounded to two decimal places
-  return Math.round(average * 100) / 100;
+export const calculateDeafAverage = (count: number, deafTotal: number) => {
+  // Avoid division by zero and return 0 when count is 0
+  if (count === 0) return 0;
+
+  // Calculate the deaf average and round to the nearest whole number
+  return Math.round(deafTotal / count);
 };
 
 import { AttendanceRecord } from "../types/attendanceTypes";
