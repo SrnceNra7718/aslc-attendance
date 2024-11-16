@@ -136,7 +136,7 @@ const AttendanceTable = () => {
           >
             <h2 className="mb-0.5 text-[3vw] font-bold max-sm:text-[5vw]">{`${month}`}</h2>
             <div className="mb-3 w-[80%] font-normal">
-              <h3 className="flex items-center justify-center text-[2.5vw] font-normal max-sm:text-[4.5vw]">
+              <h3 className="flex items-center justify-center text-[2.5vw] font-bold max-sm:text-[4.5vw]">
                 Reports:
               </h3>
               <div className="flex w-full flex-row items-center justify-center gap-4 text-[0.7rem] md:text-[1.5rem]">

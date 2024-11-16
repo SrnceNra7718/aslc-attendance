@@ -2,6 +2,7 @@
 import {
   checkExistingAttendance,
   insertAttendance,
+  subscribeToAttendanceChanges,
   updateAttendance,
 } from "@/utils/supabase/database";
 import { useState, useEffect } from "react";
@@ -95,6 +96,7 @@ export default function AttendanceForm() {
     getMeetingInfo();
   }, [currentDay, today]);
 
+  // Fetch and subscribe to attendance updates
   useEffect(() => {
     const fetchAttendance = async () => {
       if (nextMeetingDate) {
@@ -106,7 +108,6 @@ export default function AttendanceForm() {
           setOriginalDValue(deaf);
           setOriginalHValue(hearing);
         } else {
-          // No existing attendance, set values to 0
           setDValue(null);
           setHValue(null);
           setOriginalDValue(null);
@@ -116,7 +117,35 @@ export default function AttendanceForm() {
       }
     };
 
+    // Subscribe to attendance changes
+    const unsubscribe = subscribeToAttendanceChanges((updatedData) => {
+      const updatedRecord = updatedData.find(
+        (record) => record.date_mm_dd_yyyy === nextMeetingDate,
+      );
+
+      if (updatedRecord) {
+        const { hearing, deaf } = updatedRecord;
+        setDValue(deaf);
+        setHValue(hearing);
+        setOriginalDValue(deaf);
+        setOriginalHValue(hearing);
+        setExistingAttendance([updatedRecord]);
+      } else {
+        setDValue(null);
+        setHValue(null);
+        setOriginalDValue(null);
+        setOriginalHValue(null);
+        setExistingAttendance([]);
+      }
+      setLogMessage("Recieved updated attendance count");
+      setIsSaveClicked(true); // Show LogDisplay
+      setTimeout(() => setIsSaveClicked(false), 1000); // Reset
+    });
     fetchAttendance();
+
+    return () => {
+      unsubscribe();
+    };
   }, [nextMeetingDate]);
 
   // Function to handle input change and prevent negative values

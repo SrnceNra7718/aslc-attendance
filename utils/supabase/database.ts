@@ -1,3 +1,4 @@
+import { AttendanceRecord } from "@/app/components/types/attendanceTypes";
 import { createClient } from "./client";
 
 const supabase = createClient();
@@ -38,14 +39,6 @@ export const checkExistingAttendance = async (formattedDate: string) => {
 
   return data;
 };
-// Define the interface for each attendance record
-interface AttendanceRecord {
-  date_mm_dd_yyyy: string;
-  meeting_type: string;
-  deaf: number;
-  hearing: number;
-  total: number;
-}
 
 // Function to subscribe to attendance table changes and get all data
 export const subscribeToAttendanceChanges = (
