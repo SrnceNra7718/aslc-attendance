@@ -285,9 +285,9 @@ export default function AttendanceForm() {
   };
 
   const button_Red_Classes =
-    "bg-red-600 p-1 text-xs text-slate-100 max-md:mt-8 max-sm:m-0 sm:mt-7 sm:p-2 sm:text-sm md:mt-7 lg:mt-9";
+    "bg-red-600 p-1 text-xs text-slate-100 max-md:mt-8 max-sm:mt-1 sm:mt-7 sm:p-2 sm:text-sm md:mt-7 lg:mt-9 md:scale-125";
   const button_Blue_Classes =
-    "bg-blue-600 p-1 text-xs text-slate-100 max-md:mt-8 max-sm:m-0 sm:mt-7 sm:p-2 sm:text-sm md:mt-7 lg:mt-9";
+    "bg-blue-600 p-1 text-xs text-slate-100 max-md:mt-8 max-sm:mt-0 sm:mt-7 sm:p-2 sm:text-sm md:mt-7 lg:mt-9 md:scale-125";
 
   return (
     <div
@@ -319,10 +319,10 @@ export default function AttendanceForm() {
                 onClick={handleMinusDeaf}
                 className={button_Red_Classes}
               >
-                <CircleMinus size={20} className="sm:size-20" />
+                <CircleMinus size={17} />
               </Button>
             )}
-            <h2 className="-my-2 flex items-center">D = </h2>
+            <h2 className="-my-2 ml-4 flex items-center">D = </h2>
             <input
               id="dValue"
               type="number"
@@ -339,9 +339,9 @@ export default function AttendanceForm() {
                 color="primary"
                 variant="solid"
                 onClick={handleAddDeaf}
-                className={button_Blue_Classes}
+                className={`${button_Blue_Classes} max-sm:mt-1`}
               >
-                <CirclePlus size={20} className="sm:size-20" />
+                <CirclePlus size={17} />
               </Button>
             )}
           </div>
@@ -354,12 +354,12 @@ export default function AttendanceForm() {
                 color="danger"
                 variant="solid"
                 onClick={handleMinusHearing}
-                className={button_Red_Classes}
+                className={`${button_Red_Classes} max-sm:mt-0`}
               >
-                <CircleMinus size={20} className="sm:size-20" />
+                <CircleMinus size={17} />
               </Button>
             )}
-            <h2 className="flex items-center">H = </h2>
+            <h2 className="ml-4 flex items-center">H = </h2>
             <input
               id="hValue"
               type="number"
@@ -378,19 +378,19 @@ export default function AttendanceForm() {
                 onClick={handleAddHearing}
                 className={button_Blue_Classes}
               >
-                <CirclePlus size={20} className="sm:size-20" />
+                <CirclePlus size={17} />
               </Button>
             )}
           </div>
           <span className="h-1 w-[60vw] items-center bg-foreground" />
           {/* Total display aligned to the right */}
-          <div className="-m-2 -ml-[12vw] flex w-full flex-row items-center justify-center py-3 pl-[10vw]">
+          <div className="-m-2 -ml-[10vw] flex w-full flex-row items-center justify-center py-3 pl-[10vw]">
             <h2>Total = </h2>
             <h2 className="ml-5 flex w-[16vw] justify-start">{totalValue}</h2>
           </div>
         </div>
         {/* Conditional rendering of the buttons */}
-        <div className="absolute right-0 top-16 flex gap-2 sm:right-3 sm:top-20">
+        <div className="absolute right-0 top-16 flex gap-2 max-sm:top-[4.5rem] sm:right-3 sm:top-20">
           {/* Only show Edit button when not editing */}
           {isHovered && !isEditable && (
             <CustomButton
@@ -407,7 +407,7 @@ export default function AttendanceForm() {
                 iconType="ban"
                 title="Cancel"
                 onClick={handleCancel}
-                className="max-sm:mr-[-3rem]"
+                className="max-sm:mr-[-1.5rem]"
               />
               <CustomButton
                 iconType="save"

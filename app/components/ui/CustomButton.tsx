@@ -1,10 +1,10 @@
 // CustomButton.tsx
 import React, { useState } from "react";
 import { Button } from "@nextui-org/button";
-import { Ban, CircleMinus, CirclePlus, Pencil, Save } from "lucide-react"; // Import the icons
+import { Ban, Pencil, Save } from "lucide-react"; // Import the icons
 
 interface CustomButtonProps {
-  iconType: "ban" | "pencil" | "save" | "add" | "minus"; // Determine the type of icon to display
+  iconType: "ban" | "pencil" | "save"; // Determine the type of icon to display
   title?: string; // Title to display next to the icon
   onClick: () => void; // Function to call on button click
   className?: string; // Optional className for additional styles
@@ -22,32 +22,23 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   const renderIcon = () => {
     switch (iconType) {
       case "ban":
-        return <Ban size={16} />;
+        return <Ban size={17} />;
       case "save":
-        return <Save size={16} />;
+        return <Save size={17} />;
       case "pencil":
-        return <Pencil size={16} />;
-      case "add":
-        return <CirclePlus size={16} />;
-      case "minus":
-        return <CircleMinus size={16} />;
-
+        return <Pencil size={17} />;
       default:
         return null; // Fallback if no valid iconType is provided
     }
   };
 
   return (
-    <div className="scale-50 sm:scale-80 md:scale-100 lg:scale-100">
+    <div className="max-md:scale-80 max-sm:scale-75 md:scale-100 lg:scale-100">
       <Button
         variant="light"
-        color={
-          iconType === "ban" || iconType === "minus" ? "danger" : "primary"
-        }
+        color={iconType === "ban" ? "danger" : "primary"}
         className={`relative flex items-center text-white transition-all duration-300 ease-in-out ${
-          iconType === "ban" || iconType === "minus"
-            ? "bg-red-600"
-            : "bg-blue-600"
+          iconType === "ban" ? "bg-red-600" : "bg-blue-600"
         } ${className}`} // Responsive scaling for different screen sizes
         onMouseEnter={() => setIsHovered(true)} // Track hover state
         onMouseLeave={() => setIsHovered(false)} // Reset hover state
