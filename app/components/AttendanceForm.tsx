@@ -8,6 +8,8 @@ import {
 import { useState, useEffect } from "react";
 import CustomButton from "./ui/CustomButton";
 import LogDisplay from "./ui/LogDisplay";
+import { CircleMinus, CirclePlus } from "lucide-react";
+import { Button } from "@nextui-org/react";
 
 export default function AttendanceForm() {
   // State variables for the input values, allowing null as a valid type
@@ -262,6 +264,31 @@ export default function AttendanceForm() {
     setIsEditable(false); // Disable editing
   };
 
+  const handleAddHearing = () => {
+    // Increment hValue by 1, initializing to 0 if it's null
+    setHValue((prev) => (prev !== null ? prev + 1 : 1));
+  };
+
+  const handleMinusHearing = () => {
+    // Decrement hValue by 1 if it's greater than 0
+    setHValue((prev) => (prev !== null && prev > 0 ? prev - 1 : 0));
+  };
+
+  const handleAddDeaf = () => {
+    // Increment dValue by 1, initializing to 0 if it's null
+    setDValue((prev) => (prev !== null ? prev + 1 : 1));
+  };
+
+  const handleMinusDeaf = () => {
+    // Decrement dValue by 1 if it's greater than 0
+    setDValue((prev) => (prev !== null && prev > 0 ? prev - 1 : 0));
+  };
+
+  const button_Red_Classes =
+    "bg-red-600 p-1 text-xs text-slate-100 max-md:mt-8 max-sm:m-0 sm:mt-7 sm:p-2 sm:text-sm md:mt-7 lg:mt-9";
+  const button_Blue_Classes =
+    "bg-blue-600 p-1 text-xs text-slate-100 max-md:mt-8 max-sm:m-0 sm:mt-7 sm:p-2 sm:text-sm md:mt-7 lg:mt-9";
+
   return (
     <div
       className="flex justify-center text-center"
@@ -284,6 +311,17 @@ export default function AttendanceForm() {
         <div className="-m-2 flex flex-col items-center justify-center py-3 text-[7vw]">
           {/* Input for D */}
           <div className="-m-2 flex flex-row pl-[10vw]">
+            {isEditable && (
+              <Button
+                size="sm"
+                color="danger"
+                variant="solid"
+                onClick={handleMinusDeaf}
+                className={button_Red_Classes}
+              >
+                <CircleMinus size={20} className="sm:size-20" />
+              </Button>
+            )}
             <h2 className="-my-2 flex items-center">D = </h2>
             <input
               id="dValue"
@@ -295,9 +333,32 @@ export default function AttendanceForm() {
               disabled={!isEditable} // Disable input if not editable
               placeholder="0"
             />
+            {isEditable && (
+              <Button
+                size="sm"
+                color="primary"
+                variant="solid"
+                onClick={handleAddDeaf}
+                className={button_Blue_Classes}
+              >
+                <CirclePlus size={20} className="sm:size-20" />
+              </Button>
+            )}
           </div>
+
           {/* Input for H */}
           <div className="flex flex-row pl-[10vw] pt-3">
+            {isEditable && (
+              <Button
+                size="sm"
+                color="danger"
+                variant="solid"
+                onClick={handleMinusHearing}
+                className={button_Red_Classes}
+              >
+                <CircleMinus size={20} className="sm:size-20" />
+              </Button>
+            )}
             <h2 className="flex items-center">H = </h2>
             <input
               id="hValue"
@@ -309,6 +370,17 @@ export default function AttendanceForm() {
               disabled={!isEditable} // Disable input if not editable
               placeholder="0"
             />
+            {isEditable && (
+              <Button
+                size="sm"
+                color="primary"
+                variant="solid"
+                onClick={handleAddHearing}
+                className={button_Blue_Classes}
+              >
+                <CirclePlus size={20} className="sm:size-20" />
+              </Button>
+            )}
           </div>
           <span className="h-1 w-[60vw] items-center bg-foreground" />
           {/* Total display aligned to the right */}
@@ -318,7 +390,7 @@ export default function AttendanceForm() {
           </div>
         </div>
         {/* Conditional rendering of the buttons */}
-        <div className="absolute right-2 top-20 flex gap-2">
+        <div className="absolute right-0 top-16 flex gap-2 sm:right-3 sm:top-20">
           {/* Only show Edit button when not editing */}
           {isHovered && !isEditable && (
             <CustomButton
@@ -335,6 +407,7 @@ export default function AttendanceForm() {
                 iconType="ban"
                 title="Cancel"
                 onClick={handleCancel}
+                className="max-sm:mr-[-3rem]"
               />
               <CustomButton
                 iconType="save"
