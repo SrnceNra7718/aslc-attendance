@@ -1,3 +1,11 @@
+import { AttendanceRecord } from "../types/attendanceTypes";
+import {
+  updateAttendance,
+  deleteAttendance,
+  fetchLatestAttendance,
+  subscribeToAttendanceChanges,
+} from "@/utils/supabase/database";
+
 // /functions/attendanceUtils.ts
 export const getMonthAndYearFromDate = (date: string | undefined): string => {
   if (!date) {
@@ -59,6 +67,7 @@ export const calculateAverage = (count: number, total: number) => {
   return Math.round(total / count);
 };
 
+// function to calculate deaf averages
 export const calculateDeafAverage = (count: number, deafTotal: number) => {
   // Avoid division by zero and return 0 when count is 0
   if (count === 0) return 0;
@@ -66,15 +75,6 @@ export const calculateDeafAverage = (count: number, deafTotal: number) => {
   // Calculate the deaf average and round to the nearest whole number
   return Math.round(deafTotal / count);
 };
-
-import { AttendanceRecord } from "../types/attendanceTypes";
-// import { getMonthAndYearFromDate } from "./getMonthAndYearFromDate";
-import {
-  updateAttendance,
-  deleteAttendance,
-  fetchLatestAttendance,
-  subscribeToAttendanceChanges,
-} from "@/utils/supabase/database";
 
 // Function to group attendance data by month and meeting type
 export const groupAttendanceByMonth = (attendanceData: AttendanceRecord[]) => {

@@ -13,17 +13,15 @@ import {
 import LogDisplay from "./ui/LogDisplay";
 import {
   groupAttendanceByMonth,
-  countTotalMeetings,
   handleAttendanceUpdate,
   handleAttendanceDelete,
   loadLatestAttendanceData,
   subscribeToAttendance,
   calculateOverallTotals,
   calculateDeafTotals,
-  calculateAverage,
-  calculateDeafAverage,
 } from "./functions/attendanceUtils";
 import { AttendanceRecord } from "./types/attendanceTypes";
+import { Reports } from "./Reports";
 
 const AttendanceTable = () => {
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
@@ -110,24 +108,8 @@ const AttendanceTable = () => {
         Attendance Updates
       </h1>
       {Object.entries(monthlyAttendance).map(([month, monthData]) => {
-        const { midWeekCount, weekendCount } = countTotalMeetings(monthData);
         const { midWeekTotal, weekendTotal } = monthlyTotals[month];
         const { midWeekDeafTotal, weekendDeafTotal } = monthlyDeafTotals[month];
-
-        // Calculate midweek average
-        const midWeekAverage = calculateAverage(midWeekCount, midWeekTotal);
-        // Calculate weekend average
-        const weekendAverage = calculateAverage(weekendCount, weekendTotal);
-
-        // Calculate deaf averages
-        const midWeekDeafAverage = calculateDeafAverage(
-          midWeekCount,
-          midWeekDeafTotal,
-        );
-        const weekendDeafAverage = calculateDeafAverage(
-          weekendCount,
-          weekendDeafTotal,
-        );
 
         return (
           <div
@@ -135,63 +117,14 @@ const AttendanceTable = () => {
             className="m-[3vw] flex scale-95 flex-col items-center justify-center rounded-3xl bg-accent py-[3vw]"
           >
             <h2 className="mb-0.5 text-[3vw] font-bold max-sm:text-[5vw]">{`${month}`}</h2>
-            <div className="mb-3 w-[80%] font-normal">
-              <h3 className="flex items-center justify-center text-[2.5vw] font-bold max-sm:text-[4.5vw]">
-                Reports:
-              </h3>
-              <div className="flex w-full flex-row items-center justify-center gap-4 text-[0.7rem] md:text-[1.5rem]">
-                {/* Midweek Section */}
-                <div className="flex w-full flex-col items-start justify-center">
-                  <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Midweek Meetings:</span>
-                    <span>{midWeekCount}</span>
-                  </div>
-                  <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Overall:</span>
-                    <span>{midWeekTotal}</span>
-                  </div>
-                  <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Average:</span>
-                    <span>{midWeekAverage}</span>
-                  </div>
-
-                  <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Overall Deaf:</span>
-                    <span>{midWeekDeafTotal}</span>
-                  </div>
-                  <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Deaf Average:</span>
-                    <span>{midWeekDeafAverage}</span>
-                  </div>
-                </div>
-                {/* Divider */}
-                <div className="h-[13vw] w-[0.1vw] bg-slate-50" />
-                {/* Weekend Section */}
-                <div className="flex w-full flex-col items-start justify-center">
-                  <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Weekend Meetings:</span>
-                    <span>{weekendCount}</span>
-                  </div>
-                  <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Overall:</span>
-                    <span>{weekendTotal}</span>
-                  </div>
-                  <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Average:</span>
-                    <span>{weekendAverage}</span>
-                  </div>
-
-                  <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Overall Deaf:</span>
-                    <span>{weekendDeafTotal}</span>
-                  </div>
-                  <div className="flex w-full flex-row justify-between">
-                    <span className="font-semibold">Deaf Average:</span>
-                    <span>{weekendDeafAverage}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Render Reports for the current month */}
+            <Reports
+              monthlyAttendance={{ [month]: monthData }} // Pass only the current month data
+              monthlyTotals={{ [month]: { midWeekTotal, weekendTotal } }} // Pass the current month totals
+              monthlyDeafTotals={{
+                [month]: { midWeekDeafTotal, weekendDeafTotal },
+              }} // Pass the current month deaf totals
+            />
 
             {/* Display Mid-week Meetings */}
             <h2 className="mt-1 text-[2vw] font-bold max-sm:text-[4vw]">{`Mid-week Meetings`}</h2>

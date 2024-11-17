@@ -6,3 +6,8 @@ export interface AttendanceRecord {
   hearing: number;
   total: number;
 }
+
+export interface MonthlyAttendance {
+  midWeek: AttendanceRecord[];
+  weekend: AttendanceRecord[];
+}
