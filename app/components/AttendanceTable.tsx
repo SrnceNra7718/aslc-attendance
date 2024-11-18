@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { Pencil, Save, Trash2, XCircle } from "lucide-react";
 import {
@@ -23,27 +24,54 @@ import {
 import { AttendanceRecord } from "./types/attendanceTypes";
 import { Reports } from "./Reports";
 
-const AttendanceTable = () => {
-  const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
-  const [editingRow, setEditingRow] = useState<string | null>(null);
+interface AttendanceTableProps {
+  selectedMonth: string | null; // Selected month for filtering (e.g., "01" for January)
+  selectedYear: string | null; // Selected year for filtering (e.g., "2024")
+}
+
+const AttendanceTable: React.FC<AttendanceTableProps> = ({
+  selectedMonth,
+  selectedYear,
+}) => {
+  const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]); // Holds all attendance records
+  const [editingRow, setEditingRow] = useState<string | null>(null); // Tracks the currently edited row
   const [localEditedData, setLocalEditedData] =
-    useState<AttendanceRecord | null>(null);
-  const [logMessage, setLogMessage] = useState<string>("");
-  const [isSaveButtonClicked, setIsSaveButtonClicked] = useState(false);
-  const monthlyTotals = calculateOverallTotals(attendanceData);
-  const monthlyDeafTotals = calculateDeafTotals(attendanceData);
+    useState<AttendanceRecord | null>(null); // Temporary data for inline editing
+  const [logMessage, setLogMessage] = useState<string>(""); // Message to display in LogDisplay
+  const [isSaveButtonClicked, setIsSaveButtonClicked] = useState(false); // Controls LogDisplay animation
 
+  // Load attendance data and set up real-time updates
   useEffect(() => {
-    loadLatestAttendanceData(setAttendanceData);
+    loadLatestAttendanceData(setAttendanceData); // Fetch latest attendance data on mount
 
-    const unsubscribe = subscribeToAttendance(setAttendanceData);
+    const unsubscribe = subscribeToAttendance(setAttendanceData); // Subscribe to real-time updates
 
-    return () => unsubscribe();
+    return () => unsubscribe(); // Cleanup subscription on unmount
   }, []);
 
-  const monthlyAttendance = groupAttendanceByMonth(attendanceData);
+  // Filter attendance records based on the selected month and year
+  const filteredAttendance = attendanceData.filter((record) => {
+    const [month, , year] = record.date_mm_dd_yyyy.split("_");
 
-  // Columns definition for NextUI Table
+    console.log(selectedMonth);
+    console.log(selectedYear);
+
+    return (
+      (!selectedMonth || selectedMonth === month) &&
+      (!selectedYear || selectedYear === year)
+    );
+  });
+
+  // Group filtered data by month for rendering and calculations
+  const monthlyAttendance = groupAttendanceByMonth(filteredAttendance);
+
+  // Calculate overall totals for the filtered data
+  const monthlyTotals = calculateOverallTotals(filteredAttendance);
+
+  // Calculate deaf totals for the filtered data
+  const monthlyDeafTotals = calculateDeafTotals(filteredAttendance);
+
+  // Define table columns
   const columns = [
     { key: "date_mm_dd_yyyy", label: "Date" },
     { key: "meeting_type", label: "Meeting Type" },
@@ -52,24 +80,27 @@ const AttendanceTable = () => {
     { key: "total", label: "Total" },
     { key: "edit", label: "Edit" },
   ];
+
+  // Handle starting inline editing for a specific row
   const handleEditClick = (rowKey: string, rowData: AttendanceRecord) => {
     setEditingRow(rowKey); // Set the current row as editable
-    setLocalEditedData({ ...rowData }); // Copy row data to localEditedData for editing
+    setLocalEditedData({ ...rowData }); // Copy row data to local state for editing
   };
 
+  // Handle input changes for inline editing, ensuring non-negative values
   const handleInputChange = (key: keyof AttendanceRecord, value: string) => {
-    // Ensure the value is not negative and default to 0 if empty or invalid
-    const numberValue = Math.max(0, Number(value) || 0);
+    const numberValue = Math.max(0, Number(value) || 0); // Ensure non-negative values
     setLocalEditedData((prevData) => {
       if (prevData) {
         const updatedData = { ...prevData, [key]: numberValue };
-        updatedData.total = updatedData.hearing + updatedData.deaf;
+        updatedData.total = updatedData.hearing + updatedData.deaf; // Update total
         return updatedData;
       }
       return null;
     });
   };
 
+  // Save the edited data to the database and update state
   const handleSave = async () => {
     handleAttendanceUpdate(
       localEditedData,
@@ -79,15 +110,17 @@ const AttendanceTable = () => {
       setEditingRow,
       setLocalEditedData,
     );
-    setIsSaveButtonClicked(true);
-    setTimeout(() => setIsSaveButtonClicked(false), 1000); // Trigger the LogDisplay
+    setIsSaveButtonClicked(true); // Trigger LogDisplay animation
+    setTimeout(() => setIsSaveButtonClicked(false), 1000); // Reset animation state
   };
 
+  // Cancel inline editing and reset local state
   const handleCancelEdit = () => {
-    setEditingRow(null);
-    setLocalEditedData(null); // Reset local edit data
+    setEditingRow(null); // Clear the editing row
+    setLocalEditedData(null); // Reset local edited data
   };
 
+  // Delete a record and update the state
   const handleDelete = async (date_mm_dd_yyyy: string) => {
     handleAttendanceDelete(
       date_mm_dd_yyyy,
@@ -98,15 +131,13 @@ const AttendanceTable = () => {
       setLocalEditedData,
       setIsSaveButtonClicked,
     );
-    setIsSaveButtonClicked(true);
-    setTimeout(() => setIsSaveButtonClicked(false), 1000); // Trigger the LogDisplay
+    setIsSaveButtonClicked(true); // Trigger LogDisplay animation
+    setTimeout(() => setIsSaveButtonClicked(false), 1000); // Reset animation state
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-[14vw]">
-      <h1 className="mb-2 text-[5vw] font-bold max-sm:text-[7vw]">
-        Attendance Updates
-      </h1>
+    <div className="flex flex-col items-center justify-center">
+      {/* Render grouped attendance data */}
       {Object.entries(monthlyAttendance).map(([month, monthData]) => {
         const { midWeekTotal, weekendTotal } = monthlyTotals[month];
         const { midWeekDeafTotal, weekendDeafTotal } = monthlyDeafTotals[month];
@@ -114,20 +145,21 @@ const AttendanceTable = () => {
         return (
           <div
             key={month}
-            className="m-[3vw] flex scale-95 flex-col items-center justify-center rounded-3xl bg-accent py-[3vw]"
+            className="flex flex-col items-center justify-center rounded-3xl bg-accent"
           >
-            <h2 className="mb-0.5 text-[3vw] font-bold max-sm:text-[5vw]">{`${month}`}</h2>
-            {/* Render Reports for the current month */}
+            {/* Reports Component */}
             <Reports
-              monthlyAttendance={{ [month]: monthData }} // Pass only the current month data
-              monthlyTotals={{ [month]: { midWeekTotal, weekendTotal } }} // Pass the current month totals
+              monthlyAttendance={{ [month]: monthData }}
+              monthlyTotals={{ [month]: { midWeekTotal, weekendTotal } }}
               monthlyDeafTotals={{
                 [month]: { midWeekDeafTotal, weekendDeafTotal },
-              }} // Pass the current month deaf totals
+              }}
             />
 
-            {/* Display Mid-week Meetings */}
-            <h2 className="mt-1 text-[2vw] font-bold max-sm:text-[4vw]">{`Mid-week Meetings`}</h2>
+            {/* Render Midweek Meetings */}
+            <h2 className="mt-1 text-[2vw] font-bold max-sm:text-[4vw]">
+              Midweek Meetings
+            </h2>
             <Table
               aria-label="Mid-week Attendance"
               className="w-screen px-[6vw]"
@@ -144,7 +176,7 @@ const AttendanceTable = () => {
               </TableHeader>
               <TableBody>
                 {monthData.midWeek.map((item) => (
-                  <TableRow key={item.date_mm_dd_yyyy} className="text-[1vw]">
+                  <TableRow key={item.date_mm_dd_yyyy}>
                     <TableCell>{item.date_mm_dd_yyyy ?? "N/A"}</TableCell>
                     <TableCell>{item.meeting_type ?? "N/A"}</TableCell>
                     <TableCell>
@@ -235,8 +267,10 @@ const AttendanceTable = () => {
               </TableBody>
             </Table>
 
-            {/* Display Weekend Meetings */}
-            <h2 className="mt-3 text-[2vw] font-bold max-sm:text-[4vw]">{`Weekend Meetings`}</h2>
+            {/* Render Weekend Meetings */}
+            <h2 className="mt-3 text-[2vw] font-bold max-sm:text-[4vw]">
+              Weekend Meetings
+            </h2>
             <Table
               aria-label="Weekend Attendance"
               className="w-screen px-[6vw]"
@@ -253,7 +287,7 @@ const AttendanceTable = () => {
               </TableHeader>
               <TableBody>
                 {monthData.weekend.map((item) => (
-                  <TableRow key={item.date_mm_dd_yyyy} className="text-[1vw]">
+                  <TableRow key={item.date_mm_dd_yyyy}>
                     <TableCell>{item.date_mm_dd_yyyy ?? "N/A"}</TableCell>
                     <TableCell>{item.meeting_type ?? "N/A"}</TableCell>
                     <TableCell>
@@ -347,13 +381,13 @@ const AttendanceTable = () => {
         );
       })}
 
+      {/* LogDisplay Component */}
       {logMessage && (
         <LogDisplay
           message={logMessage}
           isButtonClicked={isSaveButtonClicked}
         />
       )}
-      {/* Display LogDisplay with log message */}
     </div>
   );
 };
