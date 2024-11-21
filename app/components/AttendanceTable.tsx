@@ -51,7 +51,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
   // Filter attendance records based on the selected month and year
   const filteredAttendance = attendanceData.filter((record) => {
-    const [month, , year] = record.date_mm_dd_yyyy.split("_");
+    const [month, , year] = record.date_mm_dd_yyyy.split(/ |, /);
 
     console.log(selectedMonth);
     console.log(selectedYear);

@@ -1,9 +1,8 @@
 import React from "react";
-import { AttendanceRecord, MonthlyAttendance } from "./types/attendanceTypes";
+import { MonthlyAttendance } from "./types/attendanceTypes";
 import {
   calculateAverage,
   calculateDeafAverage,
-  countTotalMeetings,
 } from "./functions/attendanceUtils";
 
 interface ReportsProps {

@@ -30,7 +30,7 @@ export default function AttendanceForm() {
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
   // Get the current date (you can replace this line with actual current date logic)
-  const today = new Date(); // Example date "November 2, 2024 23:15:30"
+  const today = new Date("November 13, 2024 23:15:30"); // Example date "November 2, 2024 23:15:30"
 
   const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
 
@@ -58,7 +58,15 @@ export default function AttendanceForm() {
       const month = date.toLocaleString("default", { month: "long" });
       const day = date.getDate();
       const year = date.getFullYear();
-      return `– ${month} ${day}, ${year}`;
+      return `${month} ${day}, ${year}`;
+    };
+
+    // Function to format the date as mm_dd_yyyy
+    const formatDateToSave = (date: Date) => {
+      const month = date.toLocaleString("default", { month: "long" });
+      const day = String(date.getDate()).padStart(2, "0"); // Get the day
+      const year = date.getFullYear(); // Get the year
+      return `${month}_${day}_${year}`; // Return as mm_dd_yyyy
     };
 
     // Function to determine the meeting info
@@ -86,12 +94,11 @@ export default function AttendanceForm() {
       }
 
       const formattedDate = formatDate(nextMeetingDate);
-      const numFormDate = formatDateMMDDYYYY(nextMeetingDate);
 
       // Update the state with the meeting type and formatted date
       setMeetingType(type);
-      setMeetingInfo(`${type} Meeting ${formattedDate}`);
-      setNextMeetingDate(numFormDate); // Save the next meeting date
+      setMeetingInfo(`${type} Meeting – ${formattedDate}`);
+      setNextMeetingDate(formattedDate); // Save the next meeting date
     };
 
     // Call the function on component mount
@@ -172,14 +179,6 @@ export default function AttendanceForm() {
         }
       }
     };
-
-  // Function to format the date as mm_dd_yyyy
-  const formatDateMMDDYYYY = (date: Date) => {
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // Get the month (0-based, so add 1)
-    const day = String(date.getDate()).padStart(2, "0"); // Get the day
-    const year = date.getFullYear(); // Get the year
-    return `${month}_${day}_${year}`; // Return as mm_dd_yyyy
-  };
 
   // Function to handle submission and alert the values
   const handleSubmit = async () => {

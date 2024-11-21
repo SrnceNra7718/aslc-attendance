@@ -17,22 +17,6 @@ export const AttendanceUpdates = () => {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
-  // Mapping of month names to their corresponding numerical values
-  const monthToNumber: Record<string, string> = {
-    January: "01",
-    February: "02",
-    March: "03",
-    April: "04",
-    May: "05",
-    June: "06",
-    July: "07",
-    August: "08",
-    September: "09",
-    October: "10",
-    November: "11",
-    December: "12",
-  };
-
   useEffect(() => {
     // Load attendance data on component mount
     loadLatestAttendanceData(setAttendanceData);
@@ -49,7 +33,11 @@ export const AttendanceUpdates = () => {
     const uniqueYears = new Set<string>();
 
     attendanceData.forEach((record) => {
+      console.log("record.date_mm_dd_yyyy " + record.date_mm_dd_yyyy);
+
       const result = getMonthAndYearFromDate(record.date_mm_dd_yyyy);
+      console.log("result " + result);
+
       if (result !== "Unknown Date") {
         const [monthName, year] = result.split(" ");
         uniqueMonths.add(monthName); // Add month name
@@ -70,6 +58,7 @@ export const AttendanceUpdates = () => {
         <div className="m-2 flex gap-2">
           {/* Autocomplete for selecting a month */}
           <Autocomplete
+            aria-label="input month"
             variant="bordered"
             defaultItems={months.map((month) => ({
               label: month,
@@ -86,6 +75,7 @@ export const AttendanceUpdates = () => {
 
           {/* Autocomplete for selecting a year */}
           <Autocomplete
+            aria-label="input year"
             variant="bordered"
             defaultItems={years.map((year) => ({ label: year, value: year }))}
             placeholder="Year"
@@ -105,7 +95,7 @@ export const AttendanceUpdates = () => {
         </h2>
         {selectedMonth && selectedYear ? (
           <AttendanceTable
-            selectedMonth={selectedMonth ? monthToNumber[selectedMonth] : null}
+            selectedMonth={selectedMonth}
             selectedYear={selectedYear}
           />
         ) : null}
