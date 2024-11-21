@@ -54,7 +54,7 @@ export const AttendanceUpdates = () => {
       <h1 className="mb-2 text-[5vw] font-bold max-sm:text-[7vw]">
         Attendance Updates
       </h1>
-      <div className="m-[3vw] flex flex-col items-center justify-center rounded-3xl bg-accent py-[3vw]">
+      <div className="m-[3vw] flex w-full flex-col items-center justify-center rounded-3xl bg-accent py-[3vw]">
         <div className="m-2 flex gap-2">
           {/* Autocomplete for selecting a month */}
           <Autocomplete
@@ -98,7 +98,9 @@ export const AttendanceUpdates = () => {
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
           />
-        ) : null}
+        ) : (
+          <div className="flex w-full items-center justify-center"></div>
+        )}
       </div>
       {/* Pass the converted month number and selected year as props */}
     </div>

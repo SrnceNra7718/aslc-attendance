@@ -61,14 +61,6 @@ export default function AttendanceForm() {
       return `${month} ${day}, ${year}`;
     };
 
-    // Function to format the date as mm_dd_yyyy
-    const formatDateToSave = (date: Date) => {
-      const month = date.toLocaleString("default", { month: "long" });
-      const day = String(date.getDate()).padStart(2, "0"); // Get the day
-      const year = date.getFullYear(); // Get the year
-      return `${month}_${day}_${year}`; // Return as mm_dd_yyyy
-    };
-
     // Function to determine the meeting info
     const getMeetingInfo = () => {
       let nextMeetingDate;

@@ -10,6 +10,7 @@ import {
   TableRow,
   TableCell,
   Input,
+  Spinner, // Import Spinner for the loading indicator
 } from "@nextui-org/react";
 import LogDisplay from "./ui/LogDisplay";
 import {
@@ -39,12 +40,17 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     useState<AttendanceRecord | null>(null); // Temporary data for inline editing
   const [logMessage, setLogMessage] = useState<string>(""); // Message to display in LogDisplay
   const [isSaveButtonClicked, setIsSaveButtonClicked] = useState(false); // Controls LogDisplay animation
+  const [loading, setLoading] = useState(true); // State to track loading status
 
   // Load attendance data and set up real-time updates
+
   useEffect(() => {
+    setLoading(true); // Start loading when the component mounts
+
     loadLatestAttendanceData(setAttendanceData); // Fetch latest attendance data on mount
 
     const unsubscribe = subscribeToAttendance(setAttendanceData); // Subscribe to real-time updates
+    setLoading(false); // Stop loading when data is updated
 
     return () => unsubscribe(); // Cleanup subscription on unmount
   }, []);
@@ -52,10 +58,6 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   // Filter attendance records based on the selected month and year
   const filteredAttendance = attendanceData.filter((record) => {
     const [month, , year] = record.date_mm_dd_yyyy.split(/ |, /);
-
-    console.log(selectedMonth);
-    console.log(selectedYear);
-
     return (
       (!selectedMonth || selectedMonth === month) &&
       (!selectedYear || selectedYear === year)
@@ -134,6 +136,14 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     setIsSaveButtonClicked(true); // Trigger LogDisplay animation
     setTimeout(() => setIsSaveButtonClicked(false), 1000); // Reset animation state
   };
+
+  if (loading) {
+    return (
+      <div className="flex w-screen items-center justify-center">
+        <Spinner size="lg" /> {/* Show spinner while loading */}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center">

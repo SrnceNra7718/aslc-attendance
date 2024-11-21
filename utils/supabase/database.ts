@@ -7,7 +7,7 @@ export const fetchLatestAttendance = async () => {
   try {
     const { data: attendance, error } = await supabase
       .from("attendance")
-      .select("date_mm_dd_yyyy, meeting_type, deaf, hearing, total")
+      .select("*")
       .order("date_mm_dd_yyyy", { ascending: true }); // Order by date ascending
 
     if (error) {
