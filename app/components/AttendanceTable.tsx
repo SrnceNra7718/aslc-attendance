@@ -145,7 +145,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     );
   }
 
-  const mobileTableDMT = "flex flex-row justify-center gap-3 text-center";
+  const mobileTableDMT = "flex flex-row justify-center gap-3 -mb-3 text-center";
   const mobileTableVal = "flex justify-between gap-1";
 
   return (
@@ -170,7 +170,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
             />
 
             {/* Render Midweek Meetings */}
-            <h2 className="mt-1 text-[2vw] font-bold max-sm:text-[4vw]">
+            <h2 className="mb-1 mt-3 text-[2vw] font-bold max-sm:text-[4vw]">
               Midweek Meetings
             </h2>
             <Table
@@ -228,7 +228,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                           onChange={(e) =>
                             handleInputChange("hearing", e.target.value)
                           }
-                          className="-m-3 w-16 max-md:w-[10vw]"
+                          className="-m-3 w-20 max-md:w-[20vw]"
                         />
                       ) : (
                         (item.hearing ?? "N/A")
@@ -309,14 +309,14 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     <TableCell className="block w-full">
                       <div className={mobileTableDMT}>
                         <div className={mobileTableVal}>
-                          <span className="font-bold md:hidden">Date: </span>
-                          {item.date_mm_dd_yyyy ?? "N/A"}
+                          {/* <span className="font-bold md:hidden">
+                            Meeting Type:
+                          </span> */}
+                          {/* {item.meeting_type ?? "N/A"} */}
                         </div>
                         <div className={mobileTableVal}>
-                          <span className="font-bold md:hidden">
-                            Meeting Type:
-                          </span>
-                          {item.meeting_type ?? "N/A"}
+                          {/* <span className="font-bold md:hidden">Date: </span> */}
+                          {item.date_mm_dd_yyyy ?? "N/A"}
                         </div>
                       </div>
                     </TableCell>
@@ -341,7 +341,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                               onChange={(e) =>
                                 handleInputChange("deaf", e.target.value)
                               }
-                              className="-mx-1 -my-1.5 w-16 max-md:w-[10vw]"
+                              className="-mx-1 -my-1.5 w-16 max-md:w-[20vw]"
                             />
                           ) : (
                             (item.deaf ?? "N/A")
@@ -364,7 +364,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                               onChange={(e) =>
                                 handleInputChange("hearing", e.target.value)
                               }
-                              className="-mx-1 -my-1.5 w-16 max-md:w-[10vw]"
+                              className="-mx-1 -my-1.5 w-16 max-md:w-[20vw]"
                             />
                           ) : (
                             (item.hearing ?? "N/A")
@@ -423,7 +423,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
             </Table>
 
             {/* Render Weekend Meetings */}
-            <h2 className="mt-3 text-[2vw] font-bold max-sm:text-[4vw]">
+            <h2 className="mb-1 mt-3 text-[2vw] font-bold max-sm:text-[4vw]">
               Weekend Meetings
             </h2>
             <Table
@@ -532,6 +532,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                 ))}
               </TableBody>
             </Table>
+
             {/* Render Weekend Meetings Smaller Device*/}
             <Table
               hideHeader
@@ -560,14 +561,14 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     <TableCell className="block w-full">
                       <div className={mobileTableDMT}>
                         <div className={mobileTableVal}>
-                          <span className="font-bold md:hidden">Date: </span>
-                          {item.date_mm_dd_yyyy ?? "N/A"}
+                          {/* <span className="font-bold md:hidden">
+                            Meeting Type:
+                          </span> */}
+                          {/* {item.meeting_type ?? "N/A"} */}
                         </div>
                         <div className={mobileTableVal}>
-                          <span className="font-bold md:hidden">
-                            Meeting Type:{" "}
-                          </span>
-                          {item.meeting_type ?? "N/A"}
+                          {/* <span className="font-bold md:hidden">Date: </span> */}
+                          {item.date_mm_dd_yyyy ?? "N/A"}
                         </div>
                       </div>
                     </TableCell>
