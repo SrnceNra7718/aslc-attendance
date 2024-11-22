@@ -25,6 +25,7 @@ export default function AttendanceForm() {
 
   // State to hold the meeting type and formatted date
   const [meetingInfo, setMeetingInfo] = useState<string>("");
+  const [meetingInfoPL, setMeetingInfoPL] = useState<string>("");
   const [meetingType, setMeetingType] = useState<string>("");
   const [nextMeetingDate, setNextMeetingDate] = useState<string>(""); // State to store the next meeting date
 
@@ -93,6 +94,7 @@ export default function AttendanceForm() {
       // Update the state with the meeting type and formatted date
       setMeetingType(type);
       setMeetingInfo(`${type} Meeting – ${formattedDate}`);
+      setMeetingInfoPL(formattedDate);
       setNextMeetingDate(formattedDate); // Save the next meeting date
     };
 
@@ -305,7 +307,7 @@ export default function AttendanceForm() {
                 type="text"
                 value={inputDate} // Display the current input date value.
                 onChange={(e) => setInputDate(e.target.value)} // Update state when user types.
-                placeholder={meetingInfo} // Optional placeholder text.
+                placeholder={meetingInfoPL} // Optional placeholder text.
                 className="appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
               />
             ) : (
