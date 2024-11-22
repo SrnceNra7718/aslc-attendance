@@ -593,7 +593,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                               onChange={(e) =>
                                 handleInputChange("deaf", e.target.value)
                               }
-                              className="-mx-1 -my-1.5 w-16 max-md:w-[10vw]"
+                              className="-mx-1 -my-1.5 w-16 max-md:w-[20vw]"
                             />
                           ) : (
                             (item.deaf ?? "N/A")
@@ -616,7 +616,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                               onChange={(e) =>
                                 handleInputChange("hearing", e.target.value)
                               }
-                              className="-mx-1 -my-1.5 w-16 max-md:w-[10vw]"
+                              className="-mx-1 -my-1.5 w-16 max-md:w-[20vw]"
                             />
                           ) : (
                             (item.hearing ?? "N/A")
