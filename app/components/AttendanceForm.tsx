@@ -57,7 +57,9 @@ export default function AttendanceForm() {
     // Function to get the formatted date
     const formatDate = (date: Date) => {
       const month = date.toLocaleString("default", { month: "long" });
-      const day = date.getDate();
+      const day = String(date.getDate()).padStart(2, "0"); // Convert to string and pad
+      console.log(day); // Outputs: '01' for the 1st day of the month
+
       const year = date.getFullYear();
       return `${month} ${day}, ${year}`;
     };
