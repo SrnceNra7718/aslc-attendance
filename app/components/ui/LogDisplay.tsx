@@ -38,7 +38,7 @@ export default function LogDisplay({
   if (!isVisible) return null; // Render nothing if not visible
 
   return (
-    <div className="fixed right-4 top-4 rounded bg-secondary px-4 py-2 text-foreground-900 shadow-lg fade-out">
+    <div className="fixed right-4 top-4 z-50 rounded bg-secondary px-4 py-2 text-foreground-900 shadow-lg fade-out">
       {message}
     </div>
   );

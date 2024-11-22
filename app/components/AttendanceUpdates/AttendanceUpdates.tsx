@@ -64,7 +64,6 @@ export const AttendanceUpdates = () => {
         <div className="m-2 flex gap-2">
           {/* Autocomplete for selecting a month */}
           <Autocomplete
-            aria-hidden="false"
             aria-label="input month"
             variant="bordered"
             items={months.map((month) => ({
@@ -82,7 +81,6 @@ export const AttendanceUpdates = () => {
 
           {/* Autocomplete for selecting a year */}
           <Autocomplete
-            aria-hidden="false"
             aria-label="input year"
             variant="bordered"
             items={years.map((year) => ({

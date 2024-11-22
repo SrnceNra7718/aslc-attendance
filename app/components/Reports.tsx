@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { MonthlyAttendance } from "./types/attendanceTypes";
 import {
   calculateAverage,
   calculateDeafAverage,
 } from "./functions/attendanceUtils";
+import {
+  fetchReports,
+  updateReport,
+  insertReport,
+} from "@/utils/supabase/database";
+import LogDisplay from "./ui/LogDisplay";
 
 interface ReportsProps {
   monthlyAttendance: Record<string, MonthlyAttendance>;
@@ -19,12 +25,17 @@ export const Reports: React.FC<ReportsProps> = ({
   monthlyTotals,
   monthlyDeafTotals,
 }) => {
-  return (
-    <div className="mb-2 w-[85%] font-normal">
-      <h3 className="flex items-center justify-center text-[2.5vw] font-bold max-sm:text-[4.5vw]">
-        Reports:
-      </h3>
-      {Object.entries(monthlyAttendance).map(([month, data]) => {
+  const [reportData, setReportData] = useState<any[]>([]);
+  const [logMessage, setLogMessage] = useState<string>(""); // State for the log message
+  const [isSaveClicked, setIsSaveClicked] = useState<boolean>(false); // New state
+
+  useEffect(() => {
+    const processReports = async () => {
+      const allData: any[] = [];
+      const existingReports = await fetchReports(); // Fetch existing reports from the database
+      console.log(existingReports);
+
+      for (const [month, data] of Object.entries(monthlyAttendance)) {
         const { midWeek, weekend } = data;
 
         const midWeekCount = midWeek.length;
@@ -50,63 +61,159 @@ export const Reports: React.FC<ReportsProps> = ({
           weekendDeafTotal,
         );
 
-        return (
-          <div key={month}>
-            <div className="flex w-full flex-row items-center justify-center gap-4 text-[0.7rem] md:text-[1.5rem]">
-              {/* Midweek Section */}
-              <div className="flex w-full flex-col items-start justify-center">
-                <div className="flex w-full flex-row justify-between">
-                  <span className="font-semibold">Midweek Meetings:</span>
-                  <span>{midWeekCount}</span>
-                </div>
-                <div className="flex w-full flex-row justify-between">
-                  <span className="font-semibold">Overall:</span>
-                  <span>{midWeekTotal}</span>
-                </div>
-                <div className="flex w-full flex-row justify-between">
-                  <span className="font-semibold">Average:</span>
-                  <span>{midWeekAverage}</span>
-                </div>
+        const monthData = {
+          month,
+          midWeek: {
+            count: midWeekCount,
+            total: midWeekTotal,
+            average: midWeekAverage,
+            deafTotal: midWeekDeafTotal,
+            deafAverage: midWeekDeafAverage,
+          },
+          weekend: {
+            count: weekendCount,
+            total: weekendTotal,
+            average: weekendAverage,
+            deafTotal: weekendDeafTotal,
+            deafAverage: weekendDeafAverage,
+          },
+        };
 
-                <div className="flex w-full flex-row justify-between">
-                  <span className="font-semibold">Overall Deaf:</span>
-                  <span>{midWeekDeafTotal}</span>
-                </div>
-                <div className="flex w-full flex-row justify-between">
-                  <span className="font-semibold">Deaf Average:</span>
-                  <span>{midWeekDeafAverage}</span>
-                </div>
+        allData.push(monthData);
+
+        // Prepare month_year key for comparison
+        const monthYear = `${month}`;
+
+        // Find existing report with the same month_year
+        const existingReport = existingReports.find(
+          (report) => report.month_year === monthYear,
+        );
+        if (existingReport) {
+          // Nothing change report if it doesn't exist
+          console.log(`Nothing change report for ${monthYear}`);
+          setLogMessage(`Nothing change report for ${monthYear}`); // Log insert message
+          setIsSaveClicked(true); // Show LogDisplay
+          setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
+
+          return;
+        }
+
+        if (!existingReport) {
+          // Insert new report if it doesn't exist
+          console.log(`Inserting report for ${monthYear}`);
+          setLogMessage(`Inserting report for ${monthYear}`); // Log insert message
+          setIsSaveClicked(true); // Show LogDisplay
+          setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
+
+          await insertReport(
+            monthYear,
+            midWeekCount,
+            midWeekTotal,
+            midWeekAverage,
+            midWeekDeafTotal,
+            midWeekDeafAverage,
+            weekendCount,
+            weekendTotal,
+            weekendAverage,
+            weekendDeafTotal,
+            weekendDeafAverage,
+          );
+        } else {
+          // Compare existing data with new data
+          const hasChanges =
+            existingReport.midweek_count !== midWeekCount ||
+            existingReport.midweek_total !== midWeekTotal ||
+            existingReport.midweek_average !== midWeekAverage ||
+            existingReport.midweek_deaf_total !== midWeekDeafTotal ||
+            existingReport.midweek_deaf_average !== midWeekDeafAverage ||
+            existingReport.weekend_count !== weekendCount ||
+            existingReport.weekend_total !== weekendTotal ||
+            existingReport.weekend_average !== weekendAverage ||
+            existingReport.weekend_deaf_total !== weekendDeafTotal ||
+            existingReport.weekend_deaf_average !== weekendDeafAverage;
+
+          if (hasChanges) {
+            // Update report if there are changes
+            console.log(`Updating report for ${monthYear}`);
+            setLogMessage(`Updating report for ${monthYear}`); // Log insert message
+            setIsSaveClicked(true); // Show LogDisplay
+            setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
+
+            await updateReport(monthYear, monthData.midWeek, monthData.weekend);
+          }
+        }
+      }
+
+      setReportData(allData);
+      console.log("Processed Reports:", allData);
+    };
+
+    processReports();
+  }, [monthlyAttendance, monthlyTotals, monthlyDeafTotals]);
+
+  return (
+    <div className="mb-2 w-[85%] font-normal">
+      {logMessage && (
+        <LogDisplay message={logMessage} isButtonClicked={isSaveClicked} />
+      )}
+      {/* Display LogDisplay with log message */}
+      <h3 className="flex items-center justify-center text-[2.5vw] font-bold max-sm:text-[4.5vw]">
+        Reports:
+      </h3>
+      {reportData.map((data) => (
+        <div key={data.month}>
+          <div className="flex w-full flex-row items-center justify-center gap-4 text-[0.7rem] md:text-[1.5rem]">
+            {/* Midweek Section */}
+            <div className="flex w-full flex-col items-start justify-center">
+              <div className="flex w-full flex-row justify-between">
+                <span className="font-semibold">Midweek Meetings:</span>
+                <span>{data.midWeek.count}</span>
               </div>
-              {/* Divider */}
-              <div className="h-[13vw] w-[0.1vw] bg-slate-50" />
-              {/* Weekend Section */}
-              <div className="flex w-full flex-col items-start justify-center">
-                <div className="flex w-full flex-row justify-between">
-                  <span className="font-semibold">Weekend Meetings:</span>
-                  <span>{weekendCount}</span>
-                </div>
-                <div className="flex w-full flex-row justify-between">
-                  <span className="font-semibold">Overall:</span>
-                  <span>{weekendTotal}</span>
-                </div>
-                <div className="flex w-full flex-row justify-between">
-                  <span className="font-semibold">Average:</span>
-                  <span>{weekendAverage}</span>
-                </div>
-
-                <div className="flex w-full flex-row justify-between">
-                  <span className="font-semibold">Overall Deaf:</span>
-                  <span>{weekendDeafTotal}</span>
-                </div>
-                <div className="flex w-full flex-row justify-between">
-                  <span className="font-semibold">Deaf Average:</span>
-                  <span>{weekendDeafAverage}</span>
-                </div>
+              <div className="flex w-full flex-row justify-between">
+                <span className="font-semibold">Overall:</span>
+                <span>{data.midWeek.total}</span>
+              </div>
+              <div className="flex w-full flex-row justify-between">
+                <span className="font-semibold">Average:</span>
+                <span>{data.midWeek.average}</span>
+              </div>
+              <div className="flex w-full flex-row justify-between">
+                <span className="font-semibold">Overall Deaf:</span>
+                <span>{data.midWeek.deafTotal}</span>
+              </div>
+              <div className="flex w-full flex-row justify-between">
+                <span className="font-semibold">Deaf Average:</span>
+                <span>{data.midWeek.deafAverage}</span>
+              </div>
+            </div>
+            {/* Divider */}
+            <div className="h-[13vw] w-[0.1vw] bg-slate-50" />
+            {/* Weekend Section */}
+            <div className="flex w-full flex-col items-start justify-center">
+              <div className="flex w-full flex-row justify-between">
+                <span className="font-semibold">Weekend Meetings:</span>
+                <span>{data.weekend.count}</span>
+              </div>
+              <div className="flex w-full flex-row justify-between">
+                <span className="font-semibold">Overall:</span>
+                <span>{data.weekend.total}</span>
+              </div>
+              <div className="flex w-full flex-row justify-between">
+                <span className="font-semibold">Average:</span>
+                <span>{data.weekend.average}</span>
+              </div>
+              <div className="flex w-full flex-row justify-between">
+                <span className="font-semibold">Overall Deaf:</span>
+                <span>{data.weekend.deafTotal}</span>
+              </div>
+              <div className="flex w-full flex-row justify-between">
+                <span className="font-semibold">Deaf Average:</span>
+                <span>{data.weekend.deafAverage}</span>
               </div>
             </div>
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 };

@@ -13,6 +13,8 @@ import { Button } from "@nextui-org/react";
 
 export default function AttendanceForm() {
   // State variables for the input values, allowing null as a valid type
+  const [inputDate, setInputDate] = useState<string>("");
+
   const [dValue, setDValue] = useState<number | null>(null);
   const [hValue, setHValue] = useState<number | null>(null);
 
@@ -29,8 +31,7 @@ export default function AttendanceForm() {
   // Function to handle the sum
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
-  // Get the current date (you can replace this line with actual current date logic)
-  const today = new Date(); // Example date "November 2, 2024 23:15:30"
+  const today = inputDate ? new Date(`${inputDate} 23:15:30`) : new Date();
 
   const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
 
@@ -91,6 +92,7 @@ export default function AttendanceForm() {
       setMeetingType(type);
       setMeetingInfo(`${type} Meeting – ${formattedDate}`);
       setNextMeetingDate(formattedDate); // Save the next meeting date
+      setInputDate(formattedDate);
     };
 
     // Call the function on component mount
@@ -295,8 +297,19 @@ export default function AttendanceForm() {
           <h1 className="text-size flex items-center justify-center text-[6vw] font-extrabold">
             Attendance
           </h1>
+          {/* This conditionally renders either an input field for editable mode or meetingInfo for read-only mode */}
           <h3 className="-mt-2 flex w-full items-center justify-center text-[4vw] font-medium">
-            {meetingInfo}
+            {isEditable ? (
+              <input
+                type="text"
+                value={inputDate} // Display the current input date value.
+                onChange={(e) => setInputDate(e.target.value)} // Update state when user types.
+                placeholder={meetingInfo} // Optional placeholder text.
+                className="appearance-none border-gray-300 bg-transparent outline-none focus:outline-none"
+              />
+            ) : (
+              meetingInfo // Display meetingInfo when not in editable mode.
+            )}
           </h3>
         </div>
         <div className="-m-2 flex flex-col items-center justify-center py-3 text-[7vw]">
