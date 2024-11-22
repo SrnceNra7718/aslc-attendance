@@ -17,6 +17,7 @@ export const AttendanceUpdates = () => {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
+  // Load initial data and subscribe to updates
   useEffect(() => {
     // Load attendance data on component mount
     loadLatestAttendanceData(setAttendanceData);
@@ -27,16 +28,14 @@ export const AttendanceUpdates = () => {
     return () => unsubscribe(); // Cleanup subscription on unmount
   }, []);
 
+  // Update months and years when attendanceData changes
   useEffect(() => {
     // Process attendance data to extract months and years
     const uniqueMonths = new Set<string>();
     const uniqueYears = new Set<string>();
 
     attendanceData.forEach((record) => {
-      console.log("record.date_mm_dd_yyyy " + record.date_mm_dd_yyyy);
-
       const result = getMonthAndYearFromDate(record.date_mm_dd_yyyy);
-      console.log("result " + result);
 
       if (result !== "Unknown Date") {
         const [monthName, year] = result.split(" ");
@@ -45,12 +44,19 @@ export const AttendanceUpdates = () => {
       }
     });
 
-    setMonths(Array.from(uniqueMonths)); // Update months state
-    setYears(Array.from(uniqueYears)); // Update years state
+    const sortedMonths = Array.from(uniqueMonths).sort(
+      (a, b) => new Date(`${a} 1`).getMonth() - new Date(`${b} 1`).getMonth(),
+    );
+    const sortedYears = Array.from(uniqueYears).sort(
+      (a, b) => Number(a) - Number(b),
+    );
+
+    setMonths(sortedMonths);
+    setYears(sortedYears);
   }, [attendanceData]);
 
   return (
-    <div className="flex scale-95 flex-col items-center justify-center py-[14vw]">
+    <div className="flex scale-90 flex-col items-center justify-center py-[14vw]">
       <h1 className="mb-2 text-[5vw] font-bold max-sm:text-[7vw]">
         Attendance Updates
       </h1>
@@ -58,15 +64,16 @@ export const AttendanceUpdates = () => {
         <div className="m-2 flex gap-2">
           {/* Autocomplete for selecting a month */}
           <Autocomplete
+            aria-hidden="false"
             aria-label="input month"
             variant="bordered"
-            defaultItems={months.map((month) => ({
+            items={months.map((month) => ({
               label: month,
               value: month,
             }))}
             placeholder="Month"
             className="w-[50vw] md:max-w-[25vw]"
-            onSelectionChange={(key) => setSelectedMonth(key as string)} // Update selected month
+            onSelectionChange={(key) => setSelectedMonth(key as string)}
           >
             {(item) => (
               <AutocompleteItem key={item.value}>{item.label}</AutocompleteItem>
@@ -75,12 +82,16 @@ export const AttendanceUpdates = () => {
 
           {/* Autocomplete for selecting a year */}
           <Autocomplete
+            aria-hidden="false"
             aria-label="input year"
             variant="bordered"
-            defaultItems={years.map((year) => ({ label: year, value: year }))}
+            items={years.map((year) => ({
+              label: year,
+              value: year,
+            }))}
             placeholder="Year"
             className="w-[40vw] md:max-w-[18vw]"
-            onSelectionChange={(key) => setSelectedYear(key as string)} // Update selected year
+            onSelectionChange={(key) => setSelectedYear(key as string)}
           >
             {(item) => (
               <AutocompleteItem key={item.value}>{item.label}</AutocompleteItem>
@@ -102,7 +113,6 @@ export const AttendanceUpdates = () => {
           <div className="flex w-full items-center justify-center"></div>
         )}
       </div>
-      {/* Pass the converted month number and selected year as props */}
     </div>
   );
 };

@@ -42,14 +42,13 @@ export const checkExistingAttendance = async (formattedDate: string) => {
 
 // Function to subscribe to attendance table changes and get all data
 export const subscribeToAttendanceChanges = (
-  callback: (updatedData: AttendanceRecord[]) => void, // Expecting an array of AttendanceRecord
+  callback: (updatedData: AttendanceRecord[]) => void,
 ) => {
-  // Subscribe to all changes in the "attendance" table
   const attendanceChannel = supabase
-    .channel("custom-all-channel") // Channel name can be customized
+    .channel("custom-attendance-channel")
     .on(
       "postgres_changes",
-      { event: "*", schema: "public", table: "attendance" }, // Listen to all changes in the "attendance" table
+      { event: "*", schema: "public", table: "attendance" },
       async (payload) => {
         console.log("Change received!", payload); // Log the payload (or use it in your application logic)
 
@@ -58,26 +57,26 @@ export const subscribeToAttendanceChanges = (
           const { data, error } = await supabase
             .from("attendance")
             .select("*")
-            .order("date_mm_dd_yyyy", { ascending: true }); // Order by date ascending
+            .order("date_mm_dd_yyyy", { ascending: true });
 
           if (error) {
-            console.error("Error fetching data:", error);
+            console.error("Error fetching updated attendance data:", error);
             return;
           }
 
-          // Type assertion to ensure data conforms to AttendanceRecord[]
+          // Ensure data conforms to the AttendanceRecord type
           const typedData = data as AttendanceRecord[];
 
-          // Pass the typed data to the callback function
+          // Pass the updated data to the callback
           callback(typedData);
         } catch (err) {
-          console.error("Error during full data fetch:", err);
+          console.error("Error handling database changes:", err);
         }
       },
     )
-    .subscribe(); // Start listening for changes
+    .subscribe();
 
-  // Return a function that will unsubscribe when invoked
+  // Return a cleanup function to unsubscribe from the channel
   return () => {
     attendanceChannel.unsubscribe();
   };

@@ -261,25 +261,11 @@ export const loadLatestAttendanceData = async (
 export const subscribeToAttendance = (
   setAttendanceData: React.Dispatch<React.SetStateAction<AttendanceRecord[]>>,
 ) => {
+  // Use subscribeToAttendanceChanges to listen to all changes
   const unsubscribe = subscribeToAttendanceChanges(
     (updatedData: AttendanceRecord[]) => {
-      setAttendanceData((prevData) => {
-        const updatedAttendance = [...prevData];
-
-        updatedData.forEach((record) => {
-          const existingRecordIndex = updatedAttendance.findIndex(
-            (item) => item.date_mm_dd_yyyy === record.date_mm_dd_yyyy,
-          );
-
-          if (existingRecordIndex !== -1) {
-            updatedAttendance[existingRecordIndex] = record;
-          } else {
-            updatedAttendance.push(record);
-          }
-        });
-
-        return updatedAttendance;
-      });
+      // Simply set the new attendance data since we fetch all data after every change
+      setAttendanceData(updatedData);
     },
   );
 
