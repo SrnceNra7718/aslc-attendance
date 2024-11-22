@@ -102,7 +102,11 @@ export const AttendanceUpdates = () => {
         <h2 className="mt-1 text-[3vw] font-bold max-sm:text-[5vw]">
           {selectedMonth && selectedYear
             ? `${selectedMonth} ${selectedYear}`
-            : "Select a Month and Year"}
+            : selectedYear
+              ? "Select Month"
+              : selectedMonth
+                ? "Select Year"
+                : "Select Month and Year"}
         </h2>
         {selectedMonth && selectedYear ? (
           <AttendanceTable
