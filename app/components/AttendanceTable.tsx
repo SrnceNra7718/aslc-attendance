@@ -145,6 +145,9 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     );
   }
 
+  const mobileTableDMT = "flex flex-row justify-center gap-3 text-center";
+  const mobileTableVal = "flex justify-between gap-1";
+
   return (
     <div className="flex flex-col items-center justify-center">
       {/* Render grouped attendance data */}
@@ -172,7 +175,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
             </h2>
             <Table
               aria-label="Mid-week Attendance"
-              className="w-screen px-[6vw]"
+              className="hidden w-screen px-[6vw] md:block"
             >
               <TableHeader columns={columns}>
                 {(column) => (
@@ -276,6 +279,148 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                 ))}
               </TableBody>
             </Table>
+            {/* Render Midweek Meetings Smaller Device*/}
+
+            <Table
+              hideHeader
+              aria-label="Mid-week Attendance"
+              className="flex justify-center px-[6vw] text-center md:hidden"
+            >
+              {/* Update TableHeader to match the new column structure */}
+              <TableHeader>
+                <TableColumn className="text-[1.5vw] max-sm:text-[3vw]">
+                  Date & Meeting Type
+                </TableColumn>
+                <TableColumn className="text-[1.5vw] max-sm:text-[3vw]">
+                  Deaf, Hearing & Total
+                </TableColumn>
+                <TableColumn className="text-[1.5vw] max-sm:text-[3vw]">
+                  Actions
+                </TableColumn>
+              </TableHeader>
+
+              <TableBody>
+                {monthData.midWeek.map((item) => (
+                  <TableRow
+                    key={item.date_mm_dd_yyyy}
+                    className="mx-auto flex w-[80vw] flex-col border-b-medium text-center md:table-row"
+                  >
+                    {/* Combined TableCell for Date and Meeting Type */}
+                    <TableCell className="block w-full">
+                      <div className={mobileTableDMT}>
+                        <div className={mobileTableVal}>
+                          <span className="font-bold md:hidden">Date: </span>
+                          {item.date_mm_dd_yyyy ?? "N/A"}
+                        </div>
+                        <div className={mobileTableVal}>
+                          <span className="font-bold md:hidden">
+                            Meeting Type:
+                          </span>
+                          {item.meeting_type ?? "N/A"}
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    {/* Combined TableCell for Deaf, Hearing, and Total */}
+                    <TableCell className="block w-full">
+                      <div className={mobileTableDMT}>
+                        <div className={mobileTableVal}>
+                          <span className="font-bold md:hidden">Deaf:</span>
+                          {editingRow === item.date_mm_dd_yyyy ? (
+                            <Input
+                              aria-label="deaf"
+                              type="number"
+                              variant="bordered"
+                              value={
+                                localEditedData?.deaf === 0
+                                  ? "0"
+                                  : (
+                                      localEditedData?.deaf ?? item.deaf
+                                    ).toString()
+                              }
+                              onChange={(e) =>
+                                handleInputChange("deaf", e.target.value)
+                              }
+                              className="-mx-1 -my-1.5 w-16 max-md:w-[10vw]"
+                            />
+                          ) : (
+                            (item.deaf ?? "N/A")
+                          )}
+                        </div>
+                        <div className={mobileTableVal}>
+                          <span className="font-bold md:hidden">Hearing:</span>
+                          {editingRow === item.date_mm_dd_yyyy ? (
+                            <Input
+                              aria-label="hearing"
+                              variant="bordered"
+                              type="number"
+                              value={
+                                localEditedData?.hearing === 0
+                                  ? "0"
+                                  : (
+                                      localEditedData?.hearing ?? item.hearing
+                                    ).toString()
+                              }
+                              onChange={(e) =>
+                                handleInputChange("hearing", e.target.value)
+                              }
+                              className="-mx-1 -my-1.5 w-16 max-md:w-[10vw]"
+                            />
+                          ) : (
+                            (item.hearing ?? "N/A")
+                          )}
+                        </div>
+                        <div className={mobileTableVal}>
+                          <span className="font-bold md:hidden">Total:</span>
+                          {editingRow === item.date_mm_dd_yyyy
+                            ? localEditedData?.total
+                            : (item.total ?? "N/A")}
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    {/* Actions */}
+                    <TableCell className="block w-full">
+                      <div className="flex justify-center gap-1">
+                        {editingRow === item.date_mm_dd_yyyy ? (
+                          <>
+                            <button
+                              onClick={handleSave}
+                              className="rounded bg-green-500 px-1 py-0.5 text-white"
+                            >
+                              <Save size={18} />
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="rounded bg-gray-500 px-1 py-0.5 text-white"
+                            >
+                              <XCircle size={18} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() =>
+                                handleEditClick(item.date_mm_dd_yyyy, item)
+                              }
+                              className="px-1 py-0.5 text-blue-500 underline"
+                            >
+                              <Pencil size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(item.date_mm_dd_yyyy)}
+                              className="rounded px-1 py-0.5 text-red-500"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
 
             {/* Render Weekend Meetings */}
             <h2 className="mt-3 text-[2vw] font-bold max-sm:text-[4vw]">
@@ -283,7 +428,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
             </h2>
             <Table
               aria-label="Weekend Attendance"
-              className="w-screen px-[6vw]"
+              className="hidden w-screen px-[6vw] md:block"
             >
               <TableHeader columns={columns}>
                 {(column) => (
@@ -382,6 +527,146 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                           </button>
                         </div>
                       )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {/* Render Weekend Meetings Smaller Device*/}
+            <Table
+              hideHeader
+              aria-label="Weekend Attendance"
+              className="flex justify-center px-[6vw] text-center md:hidden"
+            >
+              <TableHeader>
+                <TableColumn className="text-[1.5vw] max-sm:text-[3vw]">
+                  Date & Meeting Type
+                </TableColumn>
+                <TableColumn className="text-[1.5vw] max-sm:text-[3vw]">
+                  Deaf, Hearing & Total
+                </TableColumn>
+                <TableColumn className="text-[1.5vw] max-sm:text-[3vw]">
+                  Actions
+                </TableColumn>
+              </TableHeader>
+
+              <TableBody>
+                {monthData.weekend.map((item) => (
+                  <TableRow
+                    key={item.date_mm_dd_yyyy}
+                    className="mx-auto flex w-[80vw] flex-col border-b-medium text-center md:table-row"
+                  >
+                    {/* Combined TableCell for Date and Meeting Type */}
+                    <TableCell className="block w-full">
+                      <div className={mobileTableDMT}>
+                        <div className={mobileTableVal}>
+                          <span className="font-bold md:hidden">Date: </span>
+                          {item.date_mm_dd_yyyy ?? "N/A"}
+                        </div>
+                        <div className={mobileTableVal}>
+                          <span className="font-bold md:hidden">
+                            Meeting Type:{" "}
+                          </span>
+                          {item.meeting_type ?? "N/A"}
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    {/* Combined TableCell for Deaf, Hearing, and Total */}
+                    <TableCell className="block w-full">
+                      <div className={mobileTableDMT}>
+                        <div className={mobileTableVal}>
+                          <span className="font-bold md:hidden">Deaf:</span>
+                          {editingRow === item.date_mm_dd_yyyy ? (
+                            <Input
+                              aria-label="deaf"
+                              type="number"
+                              variant="bordered"
+                              value={
+                                localEditedData?.deaf === 0
+                                  ? "0"
+                                  : (
+                                      localEditedData?.deaf ?? item.deaf
+                                    ).toString()
+                              }
+                              onChange={(e) =>
+                                handleInputChange("deaf", e.target.value)
+                              }
+                              className="-mx-1 -my-1.5 w-16 max-md:w-[10vw]"
+                            />
+                          ) : (
+                            (item.deaf ?? "N/A")
+                          )}
+                        </div>
+                        <div className={mobileTableVal}>
+                          <span className="font-bold md:hidden">Hearing:</span>
+                          {editingRow === item.date_mm_dd_yyyy ? (
+                            <Input
+                              aria-label="hearing"
+                              variant="bordered"
+                              type="number"
+                              value={
+                                localEditedData?.hearing === 0
+                                  ? "0"
+                                  : (
+                                      localEditedData?.hearing ?? item.hearing
+                                    ).toString()
+                              }
+                              onChange={(e) =>
+                                handleInputChange("hearing", e.target.value)
+                              }
+                              className="-mx-1 -my-1.5 w-16 max-md:w-[10vw]"
+                            />
+                          ) : (
+                            (item.hearing ?? "N/A")
+                          )}
+                        </div>
+                        <div className={mobileTableVal}>
+                          <span className="font-bold md:hidden">Total:</span>
+                          {editingRow === item.date_mm_dd_yyyy
+                            ? localEditedData?.total
+                            : (item.total ?? "N/A")}
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    {/* Actions */}
+                    <TableCell className="block w-full">
+                      <div className="flex justify-center gap-1">
+                        {editingRow === item.date_mm_dd_yyyy ? (
+                          <>
+                            <button
+                              onClick={handleSave}
+                              className="rounded bg-green-500 px-1 py-0.5 text-white"
+                            >
+                              <Save size={18} />
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="rounded bg-gray-500 px-1 py-0.5 text-white"
+                            >
+                              <XCircle size={18} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() =>
+                                handleEditClick(item.date_mm_dd_yyyy, item)
+                              }
+                              className="px-1 py-0.5 text-blue-500 underline"
+                            >
+                              <Pencil size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(item.date_mm_dd_yyyy)}
+                              className="rounded px-1 py-0.5 text-red-500"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

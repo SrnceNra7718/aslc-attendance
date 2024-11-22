@@ -171,7 +171,7 @@ export const Reports: React.FC<ReportsProps> = ({
       </h3>
       {reportData.map((data) => (
         <div key={data.month}>
-          <div className="flex w-full flex-row items-center justify-center gap-4 text-[0.7rem] md:text-[1.5rem]">
+          <div className="flex w-full flex-col items-center justify-center gap-4 text-[0.7rem] md:flex-row md:text-[1.5rem]">
             {/* Midweek Section */}
             <div className="flex w-full flex-col items-start justify-center">
               <div className="flex w-full flex-row justify-between">
@@ -196,7 +196,9 @@ export const Reports: React.FC<ReportsProps> = ({
               </div>
             </div>
             {/* Divider */}
-            <div className="h-[13vw] w-[0.1vw] bg-slate-50" />
+            <div className="hidden h-[13vw] w-[0.1vw] bg-slate-50 md:block" />
+            <div className="block h-[0.1vw] w-[60vw] bg-slate-50 md:hidden" />
+
             {/* Weekend Section */}
             <div className="flex w-full flex-col items-start justify-center">
               <div className="flex w-full flex-row justify-between">
