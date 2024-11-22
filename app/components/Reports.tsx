@@ -31,121 +31,130 @@ export const Reports: React.FC<ReportsProps> = ({
 
   useEffect(() => {
     const processReports = async () => {
-      const allData: any[] = [];
-      const existingReports = await fetchReports(); // Fetch existing reports from the database
-      console.log(existingReports);
+      try {
+        const allData: any[] = [];
+        const existingReports = await fetchReports(); // Fetch existing reports
+        console.log("Fetched Reports:", existingReports);
 
-      for (const [month, data] of Object.entries(monthlyAttendance)) {
-        const { midWeek, weekend } = data;
-
-        const midWeekCount = midWeek.length;
-        const weekendCount = weekend.length;
-
-        const midWeekTotal = monthlyTotals[month]?.midWeekTotal || 0;
-        const weekendTotal = monthlyTotals[month]?.weekendTotal || 0;
-
-        const midWeekDeafTotal =
-          monthlyDeafTotals[month]?.midWeekDeafTotal || 0;
-        const weekendDeafTotal =
-          monthlyDeafTotals[month]?.weekendDeafTotal || 0;
-
-        const midWeekAverage = calculateAverage(midWeekCount, midWeekTotal);
-        const weekendAverage = calculateAverage(weekendCount, weekendTotal);
-
-        const midWeekDeafAverage = calculateDeafAverage(
-          midWeekCount,
-          midWeekDeafTotal,
-        );
-        const weekendDeafAverage = calculateDeafAverage(
-          weekendCount,
-          weekendDeafTotal,
-        );
-
-        const monthData = {
-          month,
-          midWeek: {
-            count: midWeekCount,
-            total: midWeekTotal,
-            average: midWeekAverage,
-            deafTotal: midWeekDeafTotal,
-            deafAverage: midWeekDeafAverage,
-          },
-          weekend: {
-            count: weekendCount,
-            total: weekendTotal,
-            average: weekendAverage,
-            deafTotal: weekendDeafTotal,
-            deafAverage: weekendDeafAverage,
-          },
-        };
-
-        allData.push(monthData);
-
-        // Prepare month_year key for comparison
-        const monthYear = `${month}`;
-
-        // Find existing report with the same month_year
-        const existingReport = existingReports.find(
-          (report) => report.month_year === monthYear,
-        );
-        if (existingReport) {
-          // Nothing change report if it doesn't exist
-          console.log(`Nothing change report for ${monthYear}`);
-          setLogMessage(`Nothing change report for ${monthYear}`); // Log insert message
-          setIsSaveClicked(true); // Show LogDisplay
-          setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
-
+        if (!monthlyAttendance || Object.keys(monthlyAttendance).length === 0) {
+          console.warn("No attendance data available to process.");
+          setLogMessage("No attendance data available.");
           return;
         }
 
-        if (!existingReport) {
-          // Insert new report if it doesn't exist
-          console.log(`Inserting report for ${monthYear}`);
-          setLogMessage(`Inserting report for ${monthYear}`); // Log insert message
-          setIsSaveClicked(true); // Show LogDisplay
-          setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
+        for (const [month, data] of Object.entries(monthlyAttendance)) {
+          const { midWeek, weekend } = data;
+          const midWeekCount = midWeek.length;
+          const weekendCount = weekend.length;
 
-          await insertReport(
-            monthYear,
+          const midWeekTotal = monthlyTotals[month]?.midWeekTotal || 0;
+          const weekendTotal = monthlyTotals[month]?.weekendTotal || 0;
+
+          const midWeekDeafTotal =
+            monthlyDeafTotals[month]?.midWeekDeafTotal || 0;
+          const weekendDeafTotal =
+            monthlyDeafTotals[month]?.weekendDeafTotal || 0;
+
+          const midWeekAverage = calculateAverage(midWeekCount, midWeekTotal);
+          const weekendAverage = calculateAverage(weekendCount, weekendTotal);
+
+          const midWeekDeafAverage = calculateDeafAverage(
             midWeekCount,
-            midWeekTotal,
-            midWeekAverage,
             midWeekDeafTotal,
-            midWeekDeafAverage,
-            weekendCount,
-            weekendTotal,
-            weekendAverage,
-            weekendDeafTotal,
-            weekendDeafAverage,
           );
-        } else {
-          // Compare existing data with new data
-          const hasChanges =
-            existingReport.midweek_count !== midWeekCount ||
-            existingReport.midweek_total !== midWeekTotal ||
-            existingReport.midweek_average !== midWeekAverage ||
-            existingReport.midweek_deaf_total !== midWeekDeafTotal ||
-            existingReport.midweek_deaf_average !== midWeekDeafAverage ||
-            existingReport.weekend_count !== weekendCount ||
-            existingReport.weekend_total !== weekendTotal ||
-            existingReport.weekend_average !== weekendAverage ||
-            existingReport.weekend_deaf_total !== weekendDeafTotal ||
-            existingReport.weekend_deaf_average !== weekendDeafAverage;
+          const weekendDeafAverage = calculateDeafAverage(
+            weekendCount,
+            weekendDeafTotal,
+          );
 
-          if (hasChanges) {
-            // Update report if there are changes
-            console.log(`Updating report for ${monthYear}`);
-            setLogMessage(`Updating report for ${monthYear}`); // Log insert message
+          const monthData = {
+            month,
+            midWeek: {
+              count: midWeekCount,
+              total: midWeekTotal,
+              average: midWeekAverage,
+              deafTotal: midWeekDeafTotal,
+              deafAverage: midWeekDeafAverage,
+            },
+            weekend: {
+              count: weekendCount,
+              total: weekendTotal,
+              average: weekendAverage,
+              deafTotal: weekendDeafTotal,
+              deafAverage: weekendDeafAverage,
+            },
+          };
+
+          allData.push(monthData);
+
+          // Prepare month_year key for comparison
+          const monthYear = `${month}`;
+
+          // Find existing report with the same month_year
+          const existingReport = existingReports.find(
+            (report) => report.month_year === monthYear,
+          );
+          if (!existingReport) {
+            // Insert new report if it doesn't exist
+            console.log(`Inserting report for ${monthYear}`);
+            setLogMessage(`Inserting report for ${monthYear}`); // Log insert message
             setIsSaveClicked(true); // Show LogDisplay
             setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
 
-            await updateReport(monthYear, monthData.midWeek, monthData.weekend);
+            await insertReport(
+              monthYear,
+              midWeekCount,
+              midWeekTotal,
+              midWeekAverage,
+              midWeekDeafTotal,
+              midWeekDeafAverage,
+              weekendCount,
+              weekendTotal,
+              weekendAverage,
+              weekendDeafTotal,
+              weekendDeafAverage,
+            );
+          } else {
+            // Compare existing data with new data
+            const hasChanges =
+              existingReport.midweek_count !== midWeekCount ||
+              existingReport.midweek_total !== midWeekTotal ||
+              existingReport.midweek_average !== midWeekAverage ||
+              existingReport.midweek_deaf_total !== midWeekDeafTotal ||
+              existingReport.midweek_deaf_average !== midWeekDeafAverage ||
+              existingReport.weekend_count !== weekendCount ||
+              existingReport.weekend_total !== weekendTotal ||
+              existingReport.weekend_average !== weekendAverage ||
+              existingReport.weekend_deaf_total !== weekendDeafTotal ||
+              existingReport.weekend_deaf_average !== weekendDeafAverage;
+
+            if (hasChanges) {
+              // Update report if there are changes
+              console.log(`Updating report for ${monthYear}`);
+              setLogMessage(`Updating report for ${monthYear}`); // Log insert message
+              setIsSaveClicked(true); // Show LogDisplay
+              setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
+
+              await updateReport(
+                monthYear,
+                monthData.midWeek,
+                monthData.weekend,
+              );
+            } else {
+              // Nothing change report if it doesn't exist
+              console.log(`Nothing change report for ${monthYear}`);
+              setLogMessage(`Nothing change report for ${monthYear}`); // Log insert message
+              setIsSaveClicked(true); // Show LogDisplay
+              setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
+            }
           }
         }
-      }
 
-      setReportData(allData);
-      console.log("Processed Reports:", allData);
+        setReportData(allData.length ? allData : []);
+      } catch (error) {
+        console.error("Error processing reports:", error);
+        setLogMessage("An error occurred while processing reports.");
+      }
     };
 
     processReports();

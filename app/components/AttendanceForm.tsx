@@ -92,7 +92,6 @@ export default function AttendanceForm() {
       setMeetingType(type);
       setMeetingInfo(`${type} Meeting – ${formattedDate}`);
       setNextMeetingDate(formattedDate); // Save the next meeting date
-      setInputDate(formattedDate);
     };
 
     // Call the function on component mount
