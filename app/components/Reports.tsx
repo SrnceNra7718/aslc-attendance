@@ -10,6 +10,7 @@ import {
   insertReport,
 } from "@/utils/supabase/database";
 import LogDisplay from "./ui/LogDisplay";
+import ExportReportsButton from "./functions/AttendanceRecord";
 
 interface ReportsProps {
   monthlyAttendance: Record<string, MonthlyAttendance>;
@@ -34,7 +35,6 @@ export const Reports: React.FC<ReportsProps> = ({
       try {
         const allData: any[] = [];
         const existingReports = await fetchReports(); // Fetch existing reports
-        console.log("Fetched Reports:", existingReports);
 
         if (!monthlyAttendance || Object.keys(monthlyAttendance).length === 0) {
           console.warn("No attendance data available to process.");
@@ -165,7 +165,9 @@ export const Reports: React.FC<ReportsProps> = ({
       {logMessage && (
         <LogDisplay message={logMessage} isButtonClicked={isSaveClicked} />
       )}
-      {/* Display LogDisplay with log message */}
+      {/* Add the export button */}
+      <ExportReportsButton reports={reportData} />
+
       <h3 className="flex items-center justify-center text-[2.5vw] font-bold max-sm:text-[4.5vw]">
         Reports:
       </h3>
