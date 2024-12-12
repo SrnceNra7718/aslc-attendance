@@ -32,7 +32,7 @@ export default function AttendanceForm() {
   // Function to handle the sum
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
-  const today = inputDate ? new Date(`${inputDate} 23:15:30`) : new Date(); // Example date "November 2, 2024 23:15:30"
+  const today = inputDate ? new Date(`${inputDate} 23:15:30`) : new Date(); // Example date "December 19, 2024 23:15:30"
 
   const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 7 = Sunday)
 
@@ -326,7 +326,7 @@ export default function AttendanceForm() {
                 <CircleMinus size={17} />
               </Button>
             )}
-            <h2 className="-my-2 ml-4 flex items-center">D = </h2>
+            <h2 className="-my-2 ml-4 flex items-center">Deaf = </h2>
             <input
               id="dValue"
               type="number"
@@ -363,7 +363,7 @@ export default function AttendanceForm() {
                 <CircleMinus size={17} />
               </Button>
             )}
-            <h2 className="ml-4 flex items-center">H = </h2>
+            <h2 className="ml-4 flex items-center">Hearing = </h2>
             <input
               id="hValue"
               type="number"
