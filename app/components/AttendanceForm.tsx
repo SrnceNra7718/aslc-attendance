@@ -326,7 +326,7 @@ export default function AttendanceForm() {
                 <CircleMinus size={17} />
               </Button>
             )}
-            <h2 className="-my-2 ml-4 flex items-center">Deaf = </h2>
+            <h2 className="-my-2 ml-4 flex items-center">D = </h2>
             <input
               id="dValue"
               type="number"
@@ -363,7 +363,7 @@ export default function AttendanceForm() {
                 <CircleMinus size={17} />
               </Button>
             )}
-            <h2 className="ml-4 flex items-center">Hearing = </h2>
+            <h2 className="ml-4 flex items-center">H = </h2>
             <input
               id="hValue"
               type="number"
