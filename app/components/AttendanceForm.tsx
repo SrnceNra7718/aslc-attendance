@@ -32,9 +32,9 @@ export default function AttendanceForm() {
   // Function to handle the sum
   const totalValue = (dValue || 0) + (hValue || 0); // Default to 0 if either value is null
 
-  const today = inputDate ? new Date(`${inputDate} 23:15:30`) : new Date();
+  const today = inputDate ? new Date(`${inputDate} 23:15:30`) : new Date(); // Example date "November 2, 2024 23:15:30"
 
-  const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+  const currentDay = today.getDay(); // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 7 = Sunday)
 
   // State to track hover status
   const [isHovered, setIsHovered] = useState(false);
@@ -45,7 +45,7 @@ export default function AttendanceForm() {
   const [isSaveClicked, setIsSaveClicked] = useState<boolean>(false); // New state
 
   useEffect(() => {
-    // Function to calculate the next Wednesday or Saturday date
+    // Function to calculate the next meeting date
     const getNextMeetingDate = (targetDay: number) => {
       const daysUntilTarget = (targetDay + 7 - currentDay) % 7 || 7;
 
@@ -58,9 +58,7 @@ export default function AttendanceForm() {
     // Function to get the formatted date
     const formatDate = (date: Date) => {
       const month = date.toLocaleString("default", { month: "long" });
-      const day = String(date.getDate()).padStart(2, "0"); // Convert to string and pad
-      console.log(day); // Outputs: '01' for the 1st day of the month
-
+      const day = String(date.getDate()).padStart(2, "0"); // Pad single-digit days with '0'
       const year = date.getFullYear();
       return `${month} ${day}, ${year}`;
     };
@@ -70,23 +68,22 @@ export default function AttendanceForm() {
       let nextMeetingDate;
       let type = "";
 
-      // Check if today is Wednesday or Saturday
       if (currentDay === 3) {
         // Today is Wednesday
         type = "Midweek";
-        nextMeetingDate = today; // Use today's date
-      } else if (currentDay === 6) {
-        // Today is Saturday
+        nextMeetingDate = today;
+      } else if (currentDay === 0) {
+        // Today is Sunday
         type = "Weekend";
-        nextMeetingDate = today; // Use today's date
-      } else if (currentDay >= 1 && currentDay <= 5) {
-        // If today is Monday to Friday, find the next Wednesday
+        nextMeetingDate = today;
+      } else if (currentDay === 1 || currentDay === 2) {
+        // If today is Monday or Tuesday, find the next Wednesday
         type = "Midweek";
         nextMeetingDate = getNextMeetingDate(3); // 3 = Wednesday
       } else {
-        // If today is Sunday, find the next Saturday
+        // If today is Thursday, Friday, or Saturday, find the next Sunday
         type = "Weekend";
-        nextMeetingDate = getNextMeetingDate(6); // 6 = Saturday
+        nextMeetingDate = getNextMeetingDate(0); // 0 = Sunday
       }
 
       const formattedDate = formatDate(nextMeetingDate);
