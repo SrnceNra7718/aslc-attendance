@@ -23,7 +23,7 @@ import {
   calculateDeafTotals,
 } from "../functions/attendanceUtils";
 import { AttendanceRecord } from "../types/attendanceTypes";
-import { Reports } from "../Reports";
+import { Reports } from "./Reports";
 
 interface AttendanceTableProps {
   selectedMonth: string | null; // Selected month for filtering (e.g., "01" for January)

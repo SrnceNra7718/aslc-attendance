@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { MonthlyAttendance } from "./types/attendanceTypes";
+import { MonthlyAttendance } from "../types/attendanceTypes";
 import {
   calculateAverage,
   calculateDeafAverage,
-} from "./functions/attendanceUtils";
+} from "../functions/attendanceUtils";
 import {
   fetchReports,
   updateReport,
   insertReport,
 } from "@/utils/supabase/database";
-import LogDisplay from "./ui/LogDisplay";
-import ExportReportsButton from "./functions/AttendanceRecord";
+import LogDisplay from "../ui/LogDisplay";
+import ExportReportsButton from "../functions/AttendanceRecord";
 
 interface ReportsProps {
   monthlyAttendance: Record<string, MonthlyAttendance>;
