@@ -8,7 +8,7 @@ import {
   subscribeToAttendance,
 } from "../functions/attendanceUtils";
 import { AttendanceRecord } from "../types/attendanceTypes";
-import AttendanceTable from "../AttendanceTable";
+import AttendanceTable from "./AttendanceTable";
 
 export const AttendanceUpdates = () => {
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);

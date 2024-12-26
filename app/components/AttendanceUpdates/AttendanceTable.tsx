@@ -12,7 +12,7 @@ import {
   Input,
   Spinner, // Import Spinner for the loading indicator
 } from "@nextui-org/react";
-import LogDisplay from "./ui/LogDisplay";
+import LogDisplay from "../ui/LogDisplay";
 import {
   groupAttendanceByMonth,
   handleAttendanceUpdate,
@@ -21,9 +21,9 @@ import {
   subscribeToAttendance,
   calculateOverallTotals,
   calculateDeafTotals,
-} from "./functions/attendanceUtils";
-import { AttendanceRecord } from "./types/attendanceTypes";
-import { Reports } from "./Reports";
+} from "../functions/attendanceUtils";
+import { AttendanceRecord } from "../types/attendanceTypes";
+import { Reports } from "../Reports";
 
 interface AttendanceTableProps {
   selectedMonth: string | null; // Selected month for filtering (e.g., "01" for January)

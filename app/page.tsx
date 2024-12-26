@@ -1,4 +1,4 @@
-import AttendanceTable from "@/app/components/AttendanceTable";
+import AttendanceTable from "@/app/components/AttendanceUpdates/AttendanceTable";
 import AttendanceForm from "@/app/components/AttendanceForm";
 import { AttendanceUpdates } from "./components/AttendanceUpdates/AttendanceUpdates";
 
