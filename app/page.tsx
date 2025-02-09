@@ -6,8 +6,6 @@ export default async function Index() {
   return (
     <>
       <AttendanceForm />
-      <AttendanceUpdates />
-      <DownloadAttendancePage />
     </>
   );
 }

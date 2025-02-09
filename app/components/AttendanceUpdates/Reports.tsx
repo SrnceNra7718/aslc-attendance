@@ -161,7 +161,7 @@ export const Reports: React.FC<ReportsProps> = ({
   }, [monthlyAttendance, monthlyTotals, monthlyDeafTotals]);
 
   return (
-    <div className="mb-2 w-[85%] font-normal">
+    <div className="mb-2 w-[85%] px-[5rem] font-normal">
       {logMessage && (
         <LogDisplay message={logMessage} isButtonClicked={isSaveClicked} />
       )}
@@ -173,7 +173,7 @@ export const Reports: React.FC<ReportsProps> = ({
       </h3>
       {reportData.map((data) => (
         <div key={data.month}>
-          <div className="flex w-full flex-col items-center justify-center gap-4 text-[0.7rem] md:flex-row md:text-[1.5rem]">
+          <div className="flex w-full flex-col items-center justify-center gap-4 text-[1.2rem] md:flex-row md:text-[1.5rem]">
             {/* Midweek Section */}
             <div className="flex w-full flex-col items-start justify-center">
               <div className="flex w-full flex-row justify-between">

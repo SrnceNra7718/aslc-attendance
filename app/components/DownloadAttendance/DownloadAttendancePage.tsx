@@ -11,7 +11,7 @@ export const DownloadAttendancePage = () => {
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
   return (
-    <div className="flex scale-90 flex-col items-center justify-center py-[14vw]">
+    <div className="flex scale-90 flex-col items-center justify-center pb-[14vw]">
       <h1 className="mb-2 text-[5vw] font-bold max-sm:text-[7vw]">
         Download Attendance
       </h1>
