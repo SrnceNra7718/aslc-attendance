@@ -5,10 +5,10 @@ import React, { useEffect, useState } from "react";
 import {
   getMonthAndYearFromDate,
   loadLatestAttendanceData,
-  subscribeToAttendance,
 } from "../functions/attendanceUtils";
 import { AttendanceRecord } from "../types/attendanceTypes";
 import AttendanceTable from "./AttendanceTable";
+import { subscribeToAttendanceChanges } from "@/utils/supabase/database";
 
 export const AttendanceUpdates = () => {
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
@@ -23,18 +23,22 @@ export const AttendanceUpdates = () => {
     loadLatestAttendanceData(setAttendanceData);
 
     // Subscribe to attendance data updates in real-time
-    const unsubscribe = subscribeToAttendance(setAttendanceData);
+    const unsubscribe = subscribeToAttendanceChanges(
+      (updatedData: AttendanceRecord[]) => {
+        setAttendanceData(updatedData);
+        updateMonthsAndYears(updatedData);
+      },
+    );
 
     return () => unsubscribe(); // Cleanup subscription on unmount
   }, []);
 
   // Update months and years when attendanceData changes
-  useEffect(() => {
-    // Process attendance data to extract months and years
+  const updateMonthsAndYears = (data: AttendanceRecord[]) => {
     const uniqueMonths = new Set<string>();
     const uniqueYears = new Set<string>();
 
-    attendanceData.forEach((record) => {
+    data.forEach((record) => {
       const result = getMonthAndYearFromDate(record.date_mm_dd_yyyy);
 
       if (result !== "Unknown Date") {
@@ -53,6 +57,10 @@ export const AttendanceUpdates = () => {
 
     setMonths(sortedMonths);
     setYears(sortedYears);
+  };
+
+  useEffect(() => {
+    updateMonthsAndYears(attendanceData);
   }, [attendanceData]);
 
   return (

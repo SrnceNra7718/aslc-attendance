@@ -181,6 +181,16 @@ export default function AttendanceForm() {
     const deaf = dValue || 0; // Assign dValue to deaf
     const total = totalValue;
 
+    // Validate the date format
+    const dateRegex = /^[A-Za-z]+\s\d{1,2},\s\d{4}$/; // Matches "Month Day, Year" format (e.g., February 12, 2025)
+    if (!dateRegex.test(formattedDate)) {
+      console.error("Submission aborted. Invalid date.");
+      setLogMessage("Submission aborted. Invalid date."); // Log error message
+      setIsSaveClicked(true); // Show LogDisplay
+      setTimeout(() => setIsSaveClicked(false), 1000); // Reset save button click state after rendering
+      return; // Abort submission if the date is invalid
+    }
+
     // Validate that the values have changed compared to the original values
     const hasChanges = hearing !== originalHValue || deaf !== originalDValue;
 
@@ -254,6 +264,7 @@ export default function AttendanceForm() {
     setIsHovered(true);
     setDValue(originalDValue); // Revert to original D value
     setHValue(originalHValue); // Revert to original H value
+    setInputDate("");
     setIsEditable(false); // Disable editing
   };
 
