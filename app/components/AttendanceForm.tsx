@@ -289,9 +289,9 @@ export default function AttendanceForm() {
   };
 
   const button_Red_Classes =
-    "bg-red-600 p-1 text-xs text-slate-100 max-md:mt-8 max-sm:mt-1 sm:mt-7 sm:p-2 sm:text-sm md:mt-7 lg:mt-9 md:scale-125";
+    "bg-red-600 p-1 text-xs text-slate-100 rounded-l-full items-center max-md:mt-8 max-sm:mt-1 sm:mt-7 sm:p-2 sm:text-sm md:mt-7 lg:mt-6 md:scale-125 md:h-[4rem] md:w-[8rem] max-sm:-mr-3";
   const button_Blue_Classes =
-    "bg-blue-600 p-1 text-xs text-slate-100 max-md:mt-8 max-sm:mt-0 sm:mt-7 sm:p-2 sm:text-sm md:mt-7 lg:mt-9 md:scale-125";
+    "bg-blue-600 p-1 text-xs text-slate-100 rounded-r-full items-center max-md:mt-8 max-sm:mt-0 sm:mt-7 sm:p-2 sm:text-sm md:mt-7 lg:mt- md:scale-125 md:h-[4rem] md:w-[8rem] max-sm:-ml-7";
 
   return (
     <div
