@@ -1,18 +1,35 @@
 "use client";
 import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
-import { AttendanceRecord } from "../types/attendanceTypes";
+import { AttendanceRecord, MonthlyAttendance } from "../types/attendanceTypes";
 import { useEffect, useState } from "react";
 import { sortingMonthlyAttendanceData } from "../functions/DownloadAttendanceUtils"; // Import the function
-import { fetchLatestAttendance } from "@/utils/supabase/database";
+import {
+  fetchLatestAttendance,
+  subscribeToAttendanceChanges,
+} from "@/utils/supabase/database";
 
 export const DownloadAttendancePage = () => {
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
+  const [SortedAttendanceData, setSortedAttendanceData] = useState<
+    MonthlyAttendance[]
+  >([]);
+
   const [months, setMonths] = useState<string[]>([]);
   const [years, setYears] = useState<string[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
+  // Load initial data and subscribe to updates
   useEffect(() => {
+    /**
+     * Fetches the latest attendance data and updates the state with the fetched data.
+     * Logs the loaded attendance data to the console.
+     * Categorizes the attendance data by month and logs the categorized data to the console.
+     *
+     * @async
+     * @function fetchData
+     * @returns {Promise<void>} A promise that resolves when the data fetching and processing are complete.
+     */
     const fetchData = async () => {
       const latestAttendance = await fetchLatestAttendance();
       setAttendanceData(latestAttendance);
@@ -20,17 +37,63 @@ export const DownloadAttendancePage = () => {
 
       // Categorize the attendance data after loading
       const categorizedData = sortingMonthlyAttendanceData(latestAttendance);
+      setSortedAttendanceData(categorizedData);
       console.log("Categorized Attendance Data: ", categorizedData);
     };
 
     fetchData();
+
+    // Subscribe to attendance data updates in real-time
+    const unsubscribe = subscribeToAttendanceChanges(
+      (updatedData: AttendanceRecord[]) => {
+        setAttendanceData(updatedData);
+        const categorizedData = sortingMonthlyAttendanceData(updatedData);
+        setSortedAttendanceData(categorizedData);
+        updateMonthsAndYears(categorizedData);
+      },
+    );
+
+    return () => unsubscribe(); // Cleanup subscription on unmount
   }, []);
 
-  const handleAllButtonClick = async () => {
+  // Update months and years when SortedAttendanceData changes
+  const updateMonthsAndYears = (data: MonthlyAttendance[]) => {
+    const uniqueMonths = new Set<string>();
+    const uniqueYears = new Set<number>();
+
+    data.forEach((record) => {
+      uniqueMonths.add(record.month); // Add month name
+      uniqueYears.add(record.year); // Add year
+    });
+
+    const sortedMonths = Array.from(uniqueMonths).sort(
+      (a, b) => new Date(`${a} 1`).getMonth() - new Date(`${b} 1`).getMonth(),
+    );
+    const sortedYears = Array.from(uniqueYears).sort((a, b) => a - b);
+
+    setMonths(sortedMonths);
+    setYears(sortedYears.map(String)); // Convert years to strings for Autocomplete
+  };
+
+  useEffect(() => {
+    updateMonthsAndYears(SortedAttendanceData);
+  }, [SortedAttendanceData]);
+
+  const handleYearlyDownloadButtonClick = async () => {
+    console.log("handleYearlyDownloadButtonClick...");
     const latestAttendance = await fetchLatestAttendance();
-    console.log(latestAttendance);
+    console.log(
+      "latestAttendance in handleYearlyDownloadButtonClick",
+      latestAttendance,
+    );
     const categorizedData = sortingMonthlyAttendanceData(latestAttendance);
-    console.log("Categorized Attendance Data: ", categorizedData);
+    setSortedAttendanceData(categorizedData);
+    console.log("Sorted Attendance Data: ", categorizedData);
+    console.log(
+      "selectedYear in handleYearlyDownloadButtonClick",
+      selectedYear,
+    );
+    console.log("handleYearlyDownloadButtonClick is finish");
   };
 
   return (
@@ -61,7 +124,11 @@ export const DownloadAttendancePage = () => {
                 </AutocompleteItem>
               )}
             </Autocomplete>
-            <Button color="primary" size="md" onClick={handleAllButtonClick}>
+            <Button
+              color="primary"
+              size="md"
+              onClick={handleYearlyDownloadButtonClick}
+            >
               Download
             </Button>
           </div>
