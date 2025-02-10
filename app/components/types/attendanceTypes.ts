@@ -8,6 +8,12 @@ export interface AttendanceRecord {
 }
 
 export interface MonthlyAttendance {
+  month: string;
+  year: number;
   midWeek: AttendanceRecord[];
   weekend: AttendanceRecord[];
+}
+
+export interface YearlyAttendance {
+  MonthlyAttendance: MonthlyAttendance[];
 }

@@ -162,7 +162,13 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
           >
             {/* Reports Component */}
             <Reports
-              monthlyAttendance={{ [month]: monthData }}
+              monthlyAttendance={{
+                [month]: {
+                  month,
+                  year: parseInt(selectedYear || "0"),
+                  ...monthData,
+                },
+              }}
               monthlyTotals={{ [month]: { midWeekTotal, weekendTotal } }}
               monthlyDeafTotals={{
                 [month]: { midWeekDeafTotal, weekendDeafTotal },
@@ -279,8 +285,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                 ))}
               </TableBody>
             </Table>
-            {/* Render Midweek Meetings Smaller Device*/}
 
+            {/* Render Midweek Meetings Smaller Device*/}
             <Table
               hideHeader
               aria-label="Mid-week Attendance"

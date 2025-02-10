@@ -165,9 +165,6 @@ export const Reports: React.FC<ReportsProps> = ({
       {logMessage && (
         <LogDisplay message={logMessage} isButtonClicked={isSaveClicked} />
       )}
-      {/* Add the export button */}
-      <ExportReportsButton reports={reportData} />
-
       <h3 className="flex items-center justify-center text-[2.5vw] font-bold max-sm:text-[4.5vw]">
         Reports:
       </h3>
