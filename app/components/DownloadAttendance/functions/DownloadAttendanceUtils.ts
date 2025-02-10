@@ -1,4 +1,7 @@
-import { AttendanceRecord, MonthlyAttendance } from "../types/attendanceTypes";
+import {
+  AttendanceRecord,
+  MonthlyAttendance,
+} from "../../types/attendanceTypes";
 
 // Function to categorize attendance data by month and year
 export const sortingMonthlyAttendanceData = (
