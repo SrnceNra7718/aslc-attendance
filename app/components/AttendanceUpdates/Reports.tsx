@@ -161,7 +161,7 @@ export const Reports: React.FC<ReportsProps> = ({
   }, [monthlyAttendance, monthlyTotals, monthlyDeafTotals]);
 
   return (
-    <div className="mb-2 w-[85%] px-[5rem] font-normal">
+    <div className="mb-2 w-[85%] px-[1rem] font-normal">
       {logMessage && (
         <LogDisplay message={logMessage} isButtonClicked={isSaveClicked} />
       )}
