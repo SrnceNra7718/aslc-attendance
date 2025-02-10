@@ -16,8 +16,16 @@ export const DownloadAttendancePage = () => {
 
   const [months, setMonths] = useState<string[]>([]);
   const [years, setYears] = useState<string[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
+
+  const [selectedStartMonth, setSelectedStartMonth] = useState<string | null>(
+    null,
+  );
+  const [selectedEndMonth, setSelectedEndMonth] = useState<string | null>(null);
+  const [selectedStartYear, setSelectedStartYear] = useState<string | null>(
+    null,
+  );
+  const [selectedEndYear, setSelectedEndYear] = useState<string | null>(null);
 
   // Load initial data and subscribe to updates
   useEffect(() => {
@@ -96,6 +104,35 @@ export const DownloadAttendancePage = () => {
     console.log("handleYearlyDownloadButtonClick is finish");
   };
 
+  const handlePerRangeDownloadButtonClick = async () => {
+    console.log("handlePerRangeDownloadButtonClick...");
+    const latestAttendance = await fetchLatestAttendance();
+    console.log(
+      "latestAttendance in handlePerRangeDownloadButtonClick",
+      latestAttendance,
+    );
+    const categorizedData = sortingMonthlyAttendanceData(latestAttendance);
+    setSortedAttendanceData(categorizedData);
+    console.log("Sorted Attendance Data: ", categorizedData);
+    console.log(
+      "selectedStartMonth in handlePerRangeDownloadButtonClick",
+      selectedStartMonth,
+    );
+    console.log(
+      "selectedStartYear in handlePerRangeDownloadButtonClick",
+      selectedStartYear,
+    );
+    console.log(
+      "selectedEndMonth in handlePerRangeDownloadButtonClick",
+      selectedEndMonth,
+    );
+    console.log(
+      "selectedPerRangeYear in handlePerRangeDownloadButtonClick",
+      selectedEndYear,
+    );
+    console.log("handlePerRangeDownloadButtonClick is finish");
+  };
+
   return (
     <div className="flex scale-90 flex-col items-center justify-center pb-[14vw]">
       <h1 className="mb-2 text-[5vw] font-bold max-sm:text-[7vw]">
@@ -152,7 +189,7 @@ export const DownloadAttendancePage = () => {
               }))}
               placeholder="Month"
               className=""
-              onSelectionChange={(key) => setSelectedMonth(key as string)}
+              onSelectionChange={(key) => setSelectedStartMonth(key as string)}
             >
               {(item) => (
                 <AutocompleteItem key={item.value}>
@@ -171,7 +208,7 @@ export const DownloadAttendancePage = () => {
               }))}
               placeholder="Year"
               className=""
-              onSelectionChange={(key) => setSelectedYear(key as string)}
+              onSelectionChange={(key) => setSelectedStartYear(key as string)}
             >
               {(item) => (
                 <AutocompleteItem key={item.value}>
@@ -193,7 +230,7 @@ export const DownloadAttendancePage = () => {
               }))}
               placeholder="Month"
               className=""
-              onSelectionChange={(key) => setSelectedMonth(key as string)}
+              onSelectionChange={(key) => setSelectedEndMonth(key as string)}
             >
               {(item) => (
                 <AutocompleteItem key={item.value}>
@@ -212,7 +249,7 @@ export const DownloadAttendancePage = () => {
               }))}
               placeholder="Year"
               className=""
-              onSelectionChange={(key) => setSelectedYear(key as string)}
+              onSelectionChange={(key) => setSelectedEndYear(key as string)}
             >
               {(item) => (
                 <AutocompleteItem key={item.value}>
@@ -221,12 +258,16 @@ export const DownloadAttendancePage = () => {
               )}
             </Autocomplete>
           </div>
-          <Button color="primary" size="lg">
-            Range
+          <Button
+            color="primary"
+            size="md"
+            onClick={handlePerRangeDownloadButtonClick}
+          >
+            Download
           </Button>
         </div>
         {/* Divider */}
-        <div className="h-[0.1vw] w-[60vw] bg-slate-50" />
+        {/* <div className="h-[0.1vw] w-[60vw] bg-slate-50" /> */}
       </div>
     </div>
   );
