@@ -1,8 +1,14 @@
+// PerRange.tsx
 import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
 import React, { useState } from "react";
 import { fetchLatestAttendance } from "@/utils/supabase/database";
 import { sortingMonthlyAttendanceData } from "../functions/DownloadAttendanceUtils";
-import { MonthlyAttendance } from "../../types/attendanceTypes";
+import {
+  MonthlyAttendance,
+  AttendanceRecord,
+} from "../../types/attendanceTypes";
+import * as XLSX from "xlsx";
+import { processAttendanceReports } from "../functions/ReportsToDownload";
 
 interface PerRangeProps {
   months: string[];
@@ -25,32 +31,79 @@ export const PerRange: React.FC<PerRangeProps> = ({ months, years }) => {
   const [selectedEndYear, setSelectedEndYear] = useState<string | null>(null);
 
   const handlePerRangeDownloadButtonClick = async () => {
-    console.log("handlePerRangeDownloadButtonClick...");
+    if (
+      !selectedStartMonth ||
+      !selectedStartYear ||
+      !selectedEndMonth ||
+      !selectedEndYear
+    ) {
+      alert("Please select start and end month/year");
+      return;
+    }
+
+    // Parse date range
+    const startDate = new Date(`${selectedStartMonth} 1, ${selectedStartYear}`);
+    const endDate = new Date(`${selectedEndMonth} 1, ${selectedEndYear}`);
+    endDate.setMonth(endDate.getMonth() + 1);
+    endDate.setDate(0); // Last day of end month
+
+    if (startDate > endDate) {
+      alert("Start date must be before end date");
+      return;
+    }
+
     const latestAttendance = await fetchLatestAttendance();
-    console.log(
-      "latestAttendance in handlePerRangeDownloadButtonClick",
-      latestAttendance,
-    );
     const categorizedData = sortingMonthlyAttendanceData(latestAttendance);
     setSortedAttendanceData(categorizedData);
-    console.log("Sorted Attendance Data: ", categorizedData);
-    console.log(
-      "selectedStartMonth in handlePerRangeDownloadButtonClick",
-      selectedStartMonth,
+
+    // Filter data within date range
+    const filteredData = categorizedData.filter((monthly) => {
+      const monthlyDate = new Date(`${monthly.month} 1, ${monthly.year}`);
+      return monthlyDate >= startDate && monthlyDate <= endDate;
+    });
+
+    // Group by year
+    const groupedByYear = filteredData.reduce(
+      (acc: { [key: number]: AttendanceRecord[] }, monthly) => {
+        const yearRecords = [...monthly.midWeek, ...monthly.weekend];
+        acc[monthly.year] = (acc[monthly.year] || []).concat(yearRecords);
+        return acc;
+      },
+      {},
     );
-    console.log(
-      "selectedStartYear in handlePerRangeDownloadButtonClick",
-      selectedStartYear,
-    );
-    console.log(
-      "selectedEndMonth in handlePerRangeDownloadButtonClick",
-      selectedEndMonth,
-    );
-    console.log(
-      "selectedEndYear in handlePerRangeDownloadButtonClick",
-      selectedEndYear,
-    );
-    console.log("handlePerRangeDownloadButtonClick is finish");
+
+    if (Object.keys(groupedByYear).length === 0) {
+      alert("No data available for the selected range");
+      return;
+    }
+
+    // Create workbook with multiple sheets
+    const workbook = XLSX.utils.book_new();
+
+    // Add yearly data sheets
+    Object.entries(groupedByYear).forEach(([year, records]) => {
+      const worksheet = XLSX.utils.json_to_sheet(records);
+      XLSX.utils.book_append_sheet(workbook, worksheet, `Year ${year}`);
+    });
+
+    // Add consolidated reports sheet
+    processAttendanceReports({
+      filteredData,
+      workbook,
+      selectedRange: `${selectedStartMonth}_${selectedStartYear}_to_${selectedEndMonth}_${selectedEndYear}`,
+    });
+
+    // Generate and download
+    const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" });
+    const blob = new Blob([buffer], { type: "application/octet-stream" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `attendance_report_${selectedStartMonth}_${selectedStartYear}_to_${selectedEndMonth}_${selectedEndYear}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
   return (

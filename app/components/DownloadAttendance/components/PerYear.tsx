@@ -1,8 +1,11 @@
+// PerYear.tsx
 import React, { useState } from "react";
 import { MonthlyAttendance } from "../../types/attendanceTypes";
 import { fetchLatestAttendance } from "@/utils/supabase/database";
 import { sortingMonthlyAttendanceData } from "../functions/DownloadAttendanceUtils";
 import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
+import * as XLSX from "xlsx";
+import { processAttendanceReports } from "../functions/ReportsToDownload";
 
 interface PerYearProps {
   months: string[];
@@ -18,20 +21,59 @@ export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
   const handleYearlyDownloadButtonClick = async () => {
-    console.log("handleYearlyDownloadButtonClick...");
+    if (!selectedYear) {
+      alert("Please select a year");
+      return;
+    }
+
     const latestAttendance = await fetchLatestAttendance();
-    console.log(
-      "latestAttendance in handleYearlyDownloadButtonClick",
-      latestAttendance,
-    );
     const categorizedData = sortingMonthlyAttendanceData(latestAttendance);
     setSortedAttendanceData(categorizedData);
-    console.log("Sorted Attendance Data: ", categorizedData);
-    console.log(
-      "selectedYear in handleYearlyDownloadButtonClick",
-      selectedYear,
+
+    const year = parseInt(selectedYear, 10);
+    const filteredData = categorizedData.filter(
+      (monthly) => monthly.year === year,
     );
-    console.log("handleYearlyDownloadButtonClick is finish");
+
+    const allRecords = filteredData.flatMap((monthly) => [
+      ...monthly.midWeek,
+      ...monthly.weekend,
+    ]);
+
+    if (allRecords.length === 0) {
+      alert("No data available for the selected year");
+      return;
+    }
+
+    // Create workbook and worksheets
+    const workbook = XLSX.utils.book_new();
+
+    // Add raw data sheet
+    const dataWorksheet = XLSX.utils.json_to_sheet(allRecords);
+    XLSX.utils.book_append_sheet(
+      workbook,
+      dataWorksheet,
+      `Year ${selectedYear}`,
+    );
+
+    // Add reports sheet
+    processAttendanceReports({
+      filteredData,
+      workbook,
+      selectedRange: selectedYear,
+    });
+
+    // Generate and download
+    const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" });
+    const blob = new Blob([buffer], { type: "application/octet-stream" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `attendance_report_${selectedYear}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -44,10 +86,7 @@ export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
           <Autocomplete
             aria-label="input year"
             variant="bordered"
-            items={years.map((year) => ({
-              label: year,
-              value: year,
-            }))}
+            items={years.map((year) => ({ label: year, value: year }))}
             placeholder="Year"
             className="w-[50%]"
             onSelectionChange={(key) => setSelectedYear(key as string)}
