@@ -1,4 +1,4 @@
-// PerRange.tsx
+// Updated PerRange.tsx
 import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
 import React, { useState } from "react";
 import { fetchLatestAttendance } from "@/utils/supabase/database";
@@ -64,9 +64,9 @@ export const PerRange: React.FC<PerRangeProps> = ({ months, years }) => {
 
     // Group by year
     const groupedByYear = filteredData.reduce(
-      (acc: { [key: number]: AttendanceRecord[] }, monthly) => {
-        const yearRecords = [...monthly.midWeek, ...monthly.weekend];
-        acc[monthly.year] = (acc[monthly.year] || []).concat(yearRecords);
+      (acc: { [key: number]: MonthlyAttendance[] }, monthly) => {
+        acc[monthly.year] = acc[monthly.year] || [];
+        acc[monthly.year].push(monthly);
         return acc;
       },
       {},
@@ -80,9 +80,33 @@ export const PerRange: React.FC<PerRangeProps> = ({ months, years }) => {
     // Create workbook with multiple sheets
     const workbook = XLSX.utils.book_new();
 
-    // Add yearly data sheets
-    Object.entries(groupedByYear).forEach(([year, records]) => {
-      const worksheet = XLSX.utils.json_to_sheet(records);
+    Object.entries(groupedByYear).forEach(([year, monthlyData]) => {
+      const yearSheetData: any[] = [];
+
+      monthlyData.forEach((monthData) => {
+        yearSheetData.push([
+          `Month: ${monthData.month}`,
+          "Meeting Type",
+          "Date",
+          "Hearing",
+          "Deaf",
+          "Total",
+        ]);
+
+        [...monthData.midWeek, ...monthData.weekend].forEach((record) => {
+          yearSheetData.push([
+            "",
+            record.meeting_type,
+            record.date_mm_dd_yyyy,
+            record.hearing,
+            record.deaf,
+            record.total,
+          ]);
+        });
+        yearSheetData.push([]); // Blank row between months
+      });
+
+      const worksheet = XLSX.utils.aoa_to_sheet(yearSheetData);
       XLSX.utils.book_append_sheet(workbook, worksheet, `Year ${year}`);
     });
 

@@ -6,24 +6,6 @@ import {
   calculateDeafAverage,
 } from "../../functions/attendanceUtils";
 
-interface AttendanceReport {
-  month: string;
-  midWeek: {
-    count: number;
-    total: number;
-    average: number;
-    deafTotal: number;
-    deafAverage: number;
-  };
-  weekend: {
-    count: number;
-    total: number;
-    average: number;
-    deafTotal: number;
-    deafAverage: number;
-  };
-}
-
 interface ReportsToDownloadProps {
   filteredData: MonthlyAttendance[];
   workbook: XLSX.WorkBook;
@@ -33,7 +15,6 @@ interface ReportsToDownloadProps {
 export const processAttendanceReports = ({
   filteredData,
   workbook,
-  selectedRange,
 }: ReportsToDownloadProps): XLSX.WorkBook => {
   // Generate attendance reports
   const reports = filteredData.map((monthly) => {
