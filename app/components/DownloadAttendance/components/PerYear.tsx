@@ -4,7 +4,8 @@ import { MonthlyAttendance } from "../../types/attendanceTypes";
 import { fetchLatestAttendance } from "@/utils/supabase/database";
 import { sortingMonthlyAttendanceData } from "../functions/DownloadAttendanceUtils";
 import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
-import * as XLSX from "xlsx";
+import XLSX, { ExcelDataType } from "xlsx-js-style"; // Use xlsx-js-style for styling support
+
 import { processAttendanceReports } from "../functions/ReportsToDownload";
 
 interface PerYearProps {
@@ -20,14 +21,18 @@ export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
   // Per Year
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
-  const handleYearlyDownloadButtonClick = async () => {
+  const handleYearlyDownloadButtonClick = async (): Promise<void> => {
     if (!selectedYear) {
       alert("Please select a year");
       return;
     }
 
+    // Fetch the latest attendance data
     const latestAttendance = await fetchLatestAttendance();
-    const categorizedData = sortingMonthlyAttendanceData(latestAttendance);
+
+    // Sort and categorize the attendance data
+    const categorizedData: MonthlyAttendance[] =
+      sortingMonthlyAttendanceData(latestAttendance);
     setSortedAttendanceData(categorizedData);
 
     const year = parseInt(selectedYear, 10);
@@ -40,40 +45,181 @@ export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
       return;
     }
 
-    // Create workbook
+    // Create a workbook
     const workbook = XLSX.utils.book_new();
 
-    // Add sheet for the year
-    const yearSheetName = `Year ${selectedYear}`;
-    const yearSheetData: any[] = [];
+    // Define a single style object for easier maintenance
+    const cellStyle = {
+      font: { bold: true },
+      border: {
+        top: { style: "thin" },
+        bottom: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" },
+      },
+    };
 
-    // Process each month and add tables
-    filteredData.forEach((monthData) => {
+    // Prepare the yearly sheet data
+    const yearSheetName = `Year ${selectedYear}`;
+    const yearSheetData: XLSX.CellObject[][] = [];
+
+    filteredData.forEach((monthData, index) => {
+      // Add two empty rows only at the beginning of the sheet
+      if (index === 0) {
+        yearSheetData.push([], []);
+      }
+
+      // Add the month header
+      const monthHeader = [
+        {
+          v: `Month: ${monthData.month}`,
+          t: "s",
+          s: {
+            font: {
+              bold: true,
+            },
+            alignment: { horizontal: "center" },
+          },
+        },
+      ];
       yearSheetData.push([
-        `Month: ${monthData.month}`,
-        "Meeting Type",
-        "Date",
-        "Hearing",
-        "Deaf",
-        "Total",
+        { v: "", t: "s" },
+        { v: "", t: "s" },
+        ...monthHeader.map((cell) => ({ ...cell, t: cell.t as ExcelDataType })),
       ]);
-      [...monthData.midWeek, ...monthData.weekend].forEach((record) => {
+
+      // Add table headers (weekend on the left, midweek on the right)
+      yearSheetData.push([
+        { v: "", t: "s" },
+        { v: "", t: "s" }, // Left padding
+        {
+          v: "Weekend",
+          t: "s",
+          s: {
+            font: {
+              bold: true,
+            },
+            alignment: { horizontal: "center" },
+          },
+        },
+        { v: "", t: "s" }, // Padding column
+        { v: "", t: "s" }, // Padding column
+        { v: "", t: "s" }, // Padding column
+        { v: "", t: "s" }, // Padding column
+        {
+          v: "Midweek",
+          t: "s",
+          s: {
+            font: {
+              bold: true,
+            },
+            alignment: { horizontal: "center" },
+          },
+        },
+      ]);
+
+      yearSheetData.push([
+        { v: "", t: "s" },
+        { v: "", t: "s" }, // Left padding
+        { v: "Date", t: "s", s: cellStyle },
+        { v: "Deaf", t: "s", s: cellStyle },
+        { v: "Hearing", t: "s", s: cellStyle },
+        { v: "Total", t: "s", s: cellStyle },
+        { v: "", t: "s" }, // Padding column
+        { v: "Date", t: "s", s: cellStyle },
+        { v: "Deaf", t: "s", s: cellStyle },
+        { v: "Hearing", t: "s", s: cellStyle },
+        { v: "Total", t: "s", s: cellStyle },
+      ]);
+
+      // Sort weekend data by date in ascending order
+      monthData.weekend.sort(
+        (a, b) =>
+          new Date(a.date_mm_dd_yyyy).getTime() -
+          new Date(b.date_mm_dd_yyyy).getTime(),
+      );
+
+      // Sort midweek data by date in ascending order
+      monthData.midWeek.sort(
+        (a, b) =>
+          new Date(a.date_mm_dd_yyyy).getTime() -
+          new Date(b.date_mm_dd_yyyy).getTime(),
+      );
+
+      // Add weekend data (left columns)
+      const maxRows = Math.max(
+        monthData.weekend.length,
+        monthData.midWeek.length,
+      );
+      for (let i = 0; i < maxRows; i++) {
+        const weekendRecord = monthData.weekend[i] || {};
+        const midweekRecord = monthData.midWeek[i] || {};
         yearSheetData.push([
-          "",
-          record.meeting_type,
-          record.date_mm_dd_yyyy,
-          record.hearing,
-          record.deaf,
-          record.total,
+          { v: "", t: "s" },
+          { v: "", t: "s" }, // Left padding
+          { v: weekendRecord.date_mm_dd_yyyy || "", t: "s", s: cellStyle },
+          { v: weekendRecord.deaf || 0, t: "n", s: cellStyle },
+          { v: weekendRecord.hearing || 0, t: "n", s: cellStyle },
+          { v: weekendRecord.total || 0, t: "n", s: cellStyle },
+          { v: "", t: "s" }, // Spacer column
+          { v: midweekRecord.date_mm_dd_yyyy || "", t: "s", s: cellStyle },
+          { v: midweekRecord.deaf || 0, t: "n", s: cellStyle },
+          { v: midweekRecord.hearing || 0, t: "n", s: cellStyle },
+          { v: midweekRecord.total || 0, t: "n", s: cellStyle },
         ]);
-      });
-      yearSheetData.push([]); // Blank row between months
+      }
+
+      // Add blank rows for spacing between months
+      yearSheetData.push([], []);
     });
 
     const worksheet = XLSX.utils.aoa_to_sheet(yearSheetData);
+
+    // Merge cells for the month headers
+    let rowIndex = 2; // Account for the initial empty rows
+    filteredData.forEach((monthData) => {
+      const monthHeaderRange: XLSX.Range = {
+        s: { r: rowIndex, c: 2 }, // Start of the month header (after padding)
+        e: { r: rowIndex, c: 10 }, // End of the month header
+      };
+      if (!worksheet["!merges"]) worksheet["!merges"] = [];
+      worksheet["!merges"].push(monthHeaderRange);
+
+      // Merge cells for the Weekend and Midweek headers
+      const weekendHeaderRange: XLSX.Range = {
+        s: { r: rowIndex + 1, c: 2 },
+        e: { r: rowIndex + 1, c: 5 },
+      };
+      worksheet["!merges"].push(weekendHeaderRange);
+
+      const midweekHeaderRange: XLSX.Range = {
+        s: { r: rowIndex + 1, c: 7 },
+        e: { r: rowIndex + 1, c: 10 },
+      };
+      worksheet["!merges"].push(midweekHeaderRange);
+
+      rowIndex +=
+        Math.max(monthData.weekend.length, monthData.midWeek.length) + 5; // Rows for data and blank rows
+    });
+
+    // Set column widths
+    worksheet["!cols"] = [
+      { wch: 5 }, // Padding column 1
+      { wch: 5 }, // Padding column 2
+      { wch: 20 }, // Date (Weekend)
+      { wch: 10 }, // Deaf (Weekend)
+      { wch: 10 }, // Hearing (Weekend)
+      { wch: 10 }, // Total (Weekend)
+      { wch: 5 }, // Spacer column
+      { wch: 20 }, // Date (Midweek)
+      { wch: 10 }, // Deaf (Midweek)
+      { wch: 10 }, // Hearing (Midweek)
+      { wch: 10 }, // Total (Midweek)
+    ];
+
     XLSX.utils.book_append_sheet(workbook, worksheet, yearSheetName);
 
-    // Generate and download
+    // Generate and download the Excel file
     const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" });
     const blob = new Blob([buffer], { type: "application/octet-stream" });
     const url = window.URL.createObjectURL(blob);
