@@ -10,7 +10,6 @@ import {
   insertReport,
 } from "@/utils/supabase/database";
 import LogDisplay from "../ui/LogDisplay";
-import ExportReportsButton from "../functions/AttendanceRecord";
 
 interface ReportsProps {
   monthlyAttendance: Record<string, MonthlyAttendance>;

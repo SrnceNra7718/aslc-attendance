@@ -6,20 +6,60 @@ import { sortingMonthlyAttendanceData } from "../functions/DownloadAttendanceUti
 import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
 import XLSX, { ExcelDataType } from "xlsx-js-style"; // Use xlsx-js-style for styling support
 
-import { processAttendanceReports } from "../functions/ReportsToDownload";
+import {
+  processAttendanceReports,
+  calculateAverageAttendanceEachMonth,
+} from "../functions/ReportsToDownload";
 
 interface PerYearProps {
   months: string[];
   years: string[];
 }
 
-export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
-  const [SortedAttendanceData, setSortedAttendanceData] = useState<
-    MonthlyAttendance[]
-  >([]);
+// Define a single style object for easier maintenance
+export const cellStyle = {
+  font: { bold: true },
+  border: {
+    top: { style: "thin" },
+    bottom: { style: "thin" },
+    left: { style: "thin" },
+    right: { style: "thin" },
+  },
+};
+export const BorderStyle = {
+  border: {
+    top: { style: "thin" },
+    bottom: { style: "thin" },
+    left: { style: "thin" },
+    right: { style: "thin" },
+  },
+};
 
+export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
   // Per Year
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
+
+  const arrangeDataByMonth = (
+    data: MonthlyAttendance[],
+  ): MonthlyAttendance[] => {
+    const monthOrder = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    return data.sort(
+      (a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month),
+    );
+  };
 
   const handleYearlyDownloadButtonClick = async (): Promise<void> => {
     if (!selectedYear) {
@@ -33,7 +73,6 @@ export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
     // Sort and categorize the attendance data
     const categorizedData: MonthlyAttendance[] =
       sortingMonthlyAttendanceData(latestAttendance);
-    setSortedAttendanceData(categorizedData);
 
     const year = parseInt(selectedYear, 10);
     const filteredData = categorizedData.filter(
@@ -45,25 +84,23 @@ export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
       return;
     }
 
+    // Arrange data by month
+    const sortedData = arrangeDataByMonth(filteredData);
+    const attendanceReports = processAttendanceReports({
+      filteredData: sortedData,
+      selectedRange: selectedYear,
+    });
+
+    console.log("attendanceReports ", attendanceReports);
+
     // Create a workbook
     const workbook = XLSX.utils.book_new();
-
-    // Define a single style object for easier maintenance
-    const cellStyle = {
-      font: { bold: true },
-      border: {
-        top: { style: "thin" },
-        bottom: { style: "thin" },
-        left: { style: "thin" },
-        right: { style: "thin" },
-      },
-    };
 
     // Prepare the yearly sheet data
     const yearSheetName = `Year ${selectedYear}`;
     const yearSheetData: XLSX.CellObject[][] = [];
 
-    filteredData.forEach((monthData, index) => {
+    sortedData.forEach((monthData, index) => {
       // Add two empty rows only at the beginning of the sheet
       if (index === 0) {
         yearSheetData.push([], []);
@@ -82,6 +119,7 @@ export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
           },
         },
       ];
+
       yearSheetData.push([
         { v: "", t: "s" },
         { v: "", t: "s" },
@@ -151,21 +189,23 @@ export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
         monthData.weekend.length,
         monthData.midWeek.length,
       );
+
       for (let i = 0; i < maxRows; i++) {
         const weekendRecord = monthData.weekend[i] || {};
         const midweekRecord = monthData.midWeek[i] || {};
+
         yearSheetData.push([
           { v: "", t: "s" },
           { v: "", t: "s" }, // Left padding
-          { v: weekendRecord.date_mm_dd_yyyy || "", t: "s", s: cellStyle },
-          { v: weekendRecord.deaf || 0, t: "n", s: cellStyle },
-          { v: weekendRecord.hearing || 0, t: "n", s: cellStyle },
-          { v: weekendRecord.total || 0, t: "n", s: cellStyle },
+          { v: weekendRecord.date_mm_dd_yyyy || "", t: "s", s: BorderStyle },
+          { v: weekendRecord.deaf || 0, t: "n", s: BorderStyle },
+          { v: weekendRecord.hearing || 0, t: "n", s: BorderStyle },
+          { v: weekendRecord.total || 0, t: "n", s: BorderStyle },
           { v: "", t: "s" }, // Spacer column
-          { v: midweekRecord.date_mm_dd_yyyy || "", t: "s", s: cellStyle },
-          { v: midweekRecord.deaf || 0, t: "n", s: cellStyle },
-          { v: midweekRecord.hearing || 0, t: "n", s: cellStyle },
-          { v: midweekRecord.total || 0, t: "n", s: cellStyle },
+          { v: midweekRecord.date_mm_dd_yyyy || "", t: "s", s: BorderStyle },
+          { v: midweekRecord.deaf || 0, t: "n", s: BorderStyle },
+          { v: midweekRecord.hearing || 0, t: "n", s: BorderStyle },
+          { v: midweekRecord.total || 0, t: "n", s: BorderStyle },
         ]);
       }
 
@@ -173,37 +213,166 @@ export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
       yearSheetData.push([], []);
     });
 
-    const worksheet = XLSX.utils.aoa_to_sheet(yearSheetData);
+    // Prepare the reports sheet data
+    const reportsSheetName = `Reports ${selectedYear}`;
+    const reportsSheetData: XLSX.CellObject[][] = [];
+
+    reportsSheetData.push([
+      { v: "", t: "s" },
+      { v: "", t: "s" }, // Left padding
+      { v: "Reports", t: "s", s: { font: { bold: true, size: 14 } } },
+    ]);
+
+    reportsSheetData.push([
+      { v: "", t: "s" },
+      { v: "", t: "s" }, // Left padding
+      {
+        v: "Weekend Reports",
+        t: "s",
+        s: {
+          font: { bold: true },
+          alignment: { horizontal: "center" },
+        },
+      },
+      { v: "", t: "s" }, // Padding column
+      { v: "", t: "s" }, // Padding column
+      { v: "", t: "s" }, // Padding column
+      { v: "", t: "s" }, // Padding column
+      { v: "", t: "s" }, // Padding column
+      { v: "", t: "s" }, // Padding column
+
+      {
+        v: "Midweek Reports",
+        t: "s",
+        s: {
+          font: { bold: true },
+          alignment: { horizontal: "center" },
+        },
+      },
+    ]);
+
+    reportsSheetData.push([
+      // { v: `Service Year ${report.month.year}`, t: "s" },
+      { v: "", t: "s" }, // Left padding
+      { v: "", t: "s" }, // Left padding
+      { v: "Month", t: "s", s: cellStyle },
+      { v: "Number of Meetings", t: "s", s: cellStyle },
+      { v: "Total Attendance", t: "s", s: cellStyle },
+      { v: "Average Attendance Each Week", t: "s", s: cellStyle },
+      { v: " Deaf Total", t: "s", s: cellStyle },
+      { v: "Deaf Average", t: "s", s: cellStyle },
+      { v: "", t: "s" },
+      { v: "Month", t: "s", s: cellStyle },
+      { v: "Number of Meetings", t: "s", s: cellStyle },
+      { v: "Total Attendance", t: "s", s: cellStyle },
+      { v: "Average Attendance Each Week", t: "s", s: cellStyle },
+      { v: " Deaf Total", t: "s", s: cellStyle },
+      { v: "Deaf Average", t: "s", s: cellStyle },
+    ]);
+
+    attendanceReports.forEach((report) => {
+      reportsSheetData.push([
+        { v: "", t: "s" },
+        { v: "", t: "s" }, // Left padding
+        { v: `${report.month}`, t: "s", s: BorderStyle },
+        { v: `${report.weekend.count}`, t: "s", s: BorderStyle },
+        { v: `${report.weekend.total}`, t: "s", s: BorderStyle },
+        {
+          v: ` ${report.weekend.average}`,
+          t: "s",
+          s: BorderStyle,
+        },
+        {
+          v: ` ${report.weekend.deafTotal}`,
+          t: "s",
+          s: BorderStyle,
+        },
+        {
+          v: ` ${report.weekend.deafAverage}`,
+          t: "s",
+          s: BorderStyle,
+        },
+        { v: "", t: "s" },
+        { v: ` ${report.month}`, t: "s", s: BorderStyle },
+        { v: `${report.midWeek.count}`, t: "s", s: BorderStyle },
+        { v: `${report.midWeek.total}`, t: "s", s: BorderStyle },
+        {
+          v: ` ${report.midWeek.average}`,
+          t: "s",
+          s: BorderStyle,
+        },
+        {
+          v: ` ${report.midWeek.deafTotal}`,
+          t: "s",
+          s: BorderStyle,
+        },
+        {
+          v: ` ${report.midWeek.deafAverage}`,
+          t: "s",
+          s: BorderStyle,
+        },
+      ]);
+    });
+
+    // Calculate and add yearly averages
+    const yearlyWeekendAvg = calculateAverageAttendanceEachMonth(
+      sortedData,
+      "weekend",
+    );
+    const yearlyMidWeekAvg = calculateAverageAttendanceEachMonth(
+      sortedData,
+      "midWeek",
+    );
+
+    reportsSheetData.push([
+      { v: "", t: "s" },
+      { v: "", t: "s" },
+      { v: "", t: "s" },
+      { v: "", t: "s" },
+      { v: "Each Month Average", t: "s", s: { font: { bold: true } } },
+      { v: yearlyWeekendAvg.toFixed(2), t: "n", s: BorderStyle },
+      { v: "", t: "s" },
+      { v: "", t: "s" },
+      { v: "", t: "s" },
+      { v: "", t: "s" },
+      { v: "", t: "s" },
+      { v: "Each Month Average", t: "s", s: { font: { bold: true } } },
+      { v: yearlyMidWeekAvg.toFixed(2), t: "n", s: BorderStyle },
+    ]);
+
+    const yearWorksheet = XLSX.utils.aoa_to_sheet(yearSheetData);
+    const reportsWorksheet = XLSX.utils.aoa_to_sheet(reportsSheetData);
 
     // Merge cells for the month headers
     let rowIndex = 2; // Account for the initial empty rows
-    filteredData.forEach((monthData) => {
+    sortedData.forEach((monthData) => {
       const monthHeaderRange: XLSX.Range = {
         s: { r: rowIndex, c: 2 }, // Start of the month header (after padding)
         e: { r: rowIndex, c: 10 }, // End of the month header
       };
-      if (!worksheet["!merges"]) worksheet["!merges"] = [];
-      worksheet["!merges"].push(monthHeaderRange);
+
+      if (!yearWorksheet["!merges"]) yearWorksheet["!merges"] = [];
+      yearWorksheet["!merges"].push(monthHeaderRange);
 
       // Merge cells for the Weekend and Midweek headers
       const weekendHeaderRange: XLSX.Range = {
         s: { r: rowIndex + 1, c: 2 },
         e: { r: rowIndex + 1, c: 5 },
       };
-      worksheet["!merges"].push(weekendHeaderRange);
+      yearWorksheet["!merges"].push(weekendHeaderRange);
 
       const midweekHeaderRange: XLSX.Range = {
         s: { r: rowIndex + 1, c: 7 },
         e: { r: rowIndex + 1, c: 10 },
       };
-      worksheet["!merges"].push(midweekHeaderRange);
+      yearWorksheet["!merges"].push(midweekHeaderRange);
 
       rowIndex +=
         Math.max(monthData.weekend.length, monthData.midWeek.length) + 5; // Rows for data and blank rows
     });
 
-    // Set column widths
-    worksheet["!cols"] = [
+    // Set column widths for year sheet
+    yearWorksheet["!cols"] = [
       { wch: 5 }, // Padding column 1
       { wch: 5 }, // Padding column 2
       { wch: 20 }, // Date (Weekend)
@@ -217,7 +386,27 @@ export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
       { wch: 10 }, // Total (Midweek)
     ];
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, yearSheetName);
+    // Set column widths for reports sheet
+    reportsWorksheet["!cols"] = [
+      { wch: 5 }, // Padding column 1
+      { wch: 5 }, // Padding column 2
+      { wch: 20 }, // Month
+      { wch: 20 }, // Number of Meetings
+      { wch: 20 }, // Total Attendance
+      { wch: 30 }, // Average Attendance Each Week
+      { wch: 20 }, // Deaf Total
+      { wch: 20 }, // Deaf Average
+      { wch: 5 }, // Spacer column
+      { wch: 20 }, // Month
+      { wch: 20 }, // Number of Meetings
+      { wch: 20 }, // Total Attendance
+      { wch: 30 }, // Average Attendance Each Week
+      { wch: 20 }, // Deaf Total
+      { wch: 20 }, // Deaf Average
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, yearWorksheet, yearSheetName);
+    XLSX.utils.book_append_sheet(workbook, reportsWorksheet, reportsSheetName);
 
     // Generate and download the Excel file
     const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" });

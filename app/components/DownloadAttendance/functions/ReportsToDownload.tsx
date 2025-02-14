@@ -1,5 +1,5 @@
 // ReportsToDownload.tsx
-import * as XLSX from "xlsx";
+
 import { MonthlyAttendance } from "../../types/attendanceTypes";
 import {
   calculateAverage,
@@ -8,16 +8,51 @@ import {
 
 interface ReportsToDownloadProps {
   filteredData: MonthlyAttendance[];
-  workbook: XLSX.WorkBook;
   selectedRange: string;
 }
 
+interface AttendanceMonthlyReport {
+  month: string;
+  year: number;
+  midWeek: {
+    count: number;
+    total: number;
+    average: number;
+    deafTotal: number;
+    deafAverage: number;
+  };
+  weekend: {
+    count: number;
+    total: number;
+    average: number;
+    deafTotal: number;
+    deafAverage: number;
+  };
+}
+
+// Function to calculate average attendance for weekends or midweeks
+export const calculateAverageAttendanceEachMonth = (
+  data: MonthlyAttendance[],
+  type: "weekend" | "midWeek",
+): number => {
+  const totalAverage = data.reduce((sum, month) => {
+    const records = month[type];
+    const monthlyAverage =
+      records.reduce((total, record) => total + (record.total || 0), 0) /
+      (records.length || 1);
+    return sum + monthlyAverage;
+  }, 0);
+
+  const count = data.length;
+  return count > 0 ? totalAverage / count : 0;
+};
+
 export const processAttendanceReports = ({
   filteredData,
-  workbook,
-}: ReportsToDownloadProps): XLSX.WorkBook => {
+  selectedRange,
+}: ReportsToDownloadProps): AttendanceMonthlyReport[] => {
   // Generate attendance reports
-  const reports = filteredData.map((monthly) => {
+  const reports: AttendanceMonthlyReport[] = filteredData.map((monthly) => {
     const midWeekCount = monthly.midWeek.length;
     const weekendCount = monthly.weekend.length;
 
@@ -41,6 +76,7 @@ export const processAttendanceReports = ({
 
     return {
       month: monthly.month,
+      year: monthly.year,
       midWeek: {
         count: midWeekCount,
         total: midWeekTotal,
@@ -58,31 +94,5 @@ export const processAttendanceReports = ({
     };
   });
 
-  // Format data for Excel
-  const formattedData = reports.flatMap((report) => [
-    {
-      Month: report.month,
-      "Meeting Type": "Midweek",
-      "Meeting count": report.midWeek.count,
-      Overall: report.midWeek.total,
-      "Overall average": report.midWeek.average,
-      "Deaf Total": report.midWeek.deafTotal,
-      "Deaf Average": report.midWeek.deafAverage,
-    },
-    {
-      Month: report.month,
-      "Meeting Type": "Weekend",
-      "Meeting count": report.weekend.count,
-      Overall: report.weekend.total,
-      "Overall average": report.weekend.average,
-      "Deaf Total": report.weekend.deafTotal,
-      "Deaf Average": report.weekend.deafAverage,
-    },
-  ]);
-
-  // Add reports worksheet
-  const reportSheet = XLSX.utils.json_to_sheet(formattedData);
-  XLSX.utils.book_append_sheet(workbook, reportSheet, `Reports`);
-
-  return workbook;
+  return reports; // Return the processed reports data instead of a workbook
 };
