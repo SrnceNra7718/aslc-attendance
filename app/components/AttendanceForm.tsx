@@ -76,10 +76,18 @@ export default function AttendanceForm() {
         // Today is Sunday
         type = "Weekend";
         nextMeetingDate = today;
-      } else if (currentDay === 1 || currentDay === 2) {
-        // If today is Monday or Tuesday, find the next Wednesday
+      } else if (currentDay === 1) {
+        // If today is Monday, find the next Wednesday
         type = "Midweek";
         nextMeetingDate = getNextMeetingDate(3); // 3 = Wednesday
+      } else if (currentDay === 2) {
+        // If today is Tuesday
+        type = "Midweek";
+        nextMeetingDate = today;
+      } else if (currentDay === 6) {
+        // If today is Saturday
+        type = "Weekend";
+        nextMeetingDate = today;
       } else {
         // If today is Thursday, Friday, or Saturday, find the next Sunday
         type = "Weekend";
