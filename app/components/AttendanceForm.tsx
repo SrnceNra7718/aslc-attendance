@@ -10,6 +10,7 @@ import LogDisplay from "./ui/LogDisplay";
 import MeetingInfo from "./MeetingInfo";
 import AttendanceInputGroup from "./AttendanceInputGroup";
 import ControlButtons from "./ControlButtons";
+import AttendanceInputGroupMobile from "./AttendanceInputGroupMobile";
 
 // Type definitions
 type AttendanceRecord = {
@@ -281,61 +282,67 @@ export default function AttendanceForm() {
   );
 
   return (
-    <button
-      type="button"
-      className="flex justify-center text-center"
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={() => setIsHovered((prev) => !prev)}
-    >
-      <div
-        id="AttendanceForm"
-        className="flex aspect-[16/9] max-h-[90vw] w-screen max-w-[100vw] flex-col items-center justify-center border border-foreground bg-card p-6 text-foreground"
+    <div className="flex flex-col items-center justify-center">
+      <button
+        type="button"
+        className="flex justify-center text-center"
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => setIsHovered((prev) => !prev)}
       >
-        <MeetingInfo
-          isEditable={isEditable}
-          meetingInfo={meetingInfo}
-          meetingInfoPL={meetingInfoPL}
-          inputDate={inputDate}
-          setInputDate={setInputDate}
-        />
+        <div
+          id="AttendanceForm"
+          className="flex aspect-[16/9] max-h-[90vw] w-screen max-w-[100vw] flex-col items-center justify-center border border-foreground bg-card p-6 text-foreground"
+        >
+          <MeetingInfo
+            isEditable={isEditable}
+            meetingInfo={meetingInfo}
+            meetingInfoPL={meetingInfoPL}
+            inputDate={inputDate}
+            setInputDate={setInputDate}
+          />
 
-        <div className="-m-2 flex w-full flex-col items-center justify-center py-3">
-          {/* Deaf row */}
-          <div className="flex w-full items-center justify-center">
-            <div className="flex-1 text-right text-[6vw]">Deaf</div>
-            <div className="w-10 text-center text-[6vw] md:w-16 lg:w-24">=</div>
-            <div className="-ml-5 flex flex-1 justify-start">
-              <AttendanceInputGroup
-                value={dValue}
-                onChange={handleInputChange(setDValue)}
-                isEditable={isEditable}
-                onIncrement={handleAddDeaf}
-                onDecrement={handleMinusDeaf}
-                isHearing={false}
-              />
+          {/* Deaf row – hidden on mobile, shown on sm+ */}
+          <div className="w-full flex-col items-center justify-center py-3 sm:flex">
+            <div className="flex w-full items-center justify-center">
+              <div className="flex-1 text-right text-[6vw]">Deaf</div>
+              <div className="w-10 text-center text-[6vw] md:w-16 lg:w-24">
+                =
+              </div>
+              <div className="-ml-5 flex flex-1 justify-start">
+                <AttendanceInputGroup
+                  value={dValue}
+                  onChange={handleInputChange(setDValue)}
+                  isEditable={isEditable}
+                  onIncrement={handleAddDeaf}
+                  onDecrement={handleMinusDeaf}
+                  size="sm"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Hearing row */}
-          <div className="flex w-full items-center justify-center">
-            <div className="flex-1 text-right text-[6vw]">Hearing</div>
-            <div className="w-10 text-center text-[6vw] md:w-16 lg:w-24">=</div>
-            <div className="-ml-5 flex flex-1 justify-start">
-              <AttendanceInputGroup
-                value={hValue}
-                onChange={handleInputChange(setHValue)}
-                isEditable={isEditable}
-                onIncrement={handleAddHearing}
-                onDecrement={handleMinusHearing}
-                isHearing={true}
-              />
+            {/* Hearing row – hidden on mobile, shown on sm+ */}
+            <div className="flex w-full items-center justify-center">
+              <div className="flex-1 text-right text-[6vw]">Hearing</div>
+              <div className="w-10 text-center text-[6vw] md:w-16 lg:w-24">
+                =
+              </div>
+              <div className="-ml-5 flex flex-1 justify-start">
+                <AttendanceInputGroup
+                  value={hValue}
+                  onChange={handleInputChange(setHValue)}
+                  isEditable={isEditable}
+                  onIncrement={handleAddHearing}
+                  onDecrement={handleMinusHearing}
+                  size="sm"
+                />
+              </div>
             </div>
           </div>
 
           {/* Separator line */}
           <div className="my-2 h-1 w-[60vw] bg-foreground"></div>
 
-          {/* Total row */}
+          {/* Total row – visible on all screens */}
           <div className="flex w-full items-center justify-center">
             <div className="flex-1 text-right text-[6vw]">Total</div>
             <div className="w-10 text-center text-[6vw] md:w-16 lg:w-24">=</div>
@@ -343,17 +350,49 @@ export default function AttendanceForm() {
               <div className="w-[16.5vw] max-w-[130px]">{totalValue}</div>
             </div>
           </div>
-        </div>
-        <ControlButtons
-          isHovered={isHovered}
-          isEditable={isEditable}
-          onEdit={() => setIsEditable(true)}
-          onCancel={handleCancel}
-          onSubmit={handleSubmit}
-        />
-      </div>
 
-      <LogDisplay message={logMessage} isButtonClicked={isSaveClicked} />
-    </button>
+          <ControlButtons
+            isHovered={isHovered}
+            isEditable={isEditable}
+            onEdit={() => setIsEditable(true)}
+            onCancel={handleCancel}
+            onSubmit={handleSubmit}
+          />
+        </div>
+
+        <LogDisplay message={logMessage} isButtonClicked={isSaveClicked} />
+      </button>
+      {/* Mobile‑only large counters – appear below the main form */}
+      {isEditable && (
+        <div className="mt-4 block w-full sm:hidden">
+          <div className="flex flex-col items-center gap-6">
+            {/* Deaf counter */}
+            <div className="flex w-full items-center justify-center gap-4">
+              {isEditable && <span className="text-5xl font-bold">D</span>}
+              <AttendanceInputGroupMobile
+                value={dValue}
+                onChange={handleInputChange(setDValue)}
+                isEditable={isEditable}
+                onIncrement={handleAddDeaf}
+                onDecrement={handleMinusDeaf}
+                size="lg"
+              />
+            </div>
+            {/* Hearing counter */}
+            <div className="flex w-full items-center justify-center gap-4">
+              {isEditable && <span className="text-5xl font-bold">H</span>}
+              <AttendanceInputGroupMobile
+                value={hValue}
+                onChange={handleInputChange(setHValue)}
+                isEditable={isEditable}
+                onIncrement={handleAddHearing}
+                onDecrement={handleMinusHearing}
+                size="lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

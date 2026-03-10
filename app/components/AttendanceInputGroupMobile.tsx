@@ -26,41 +26,43 @@ const AttendanceInputGroup: React.FC<AttendanceInputGroupProps> = ({
   const sizeClasses = {
     sm: {
       button: "p-3 sm:p-2 md:h-[4rem] md:w-[8rem]",
-      input: "w-20 text-4xl sm:w-[16vw] sm:max-w-[100px] sm:text-[6vw]",
+      input: "w-20 text-4xl sm:w-[16vw] sm:max-w-[100px] sm:text-[8vw]",
     },
     lg: {
-      button: "p-5 text-2xl w-20 h-20 sm:hidden", // extra large on mobile only
-      input: "w-24 text-4xl",
+      button: "p-5 text-4xl w-20 h-20 sm:hidden", // extra large on mobile only
+      input: "w-24 text-6xl",
     },
   };
 
   const current = sizeClasses[size];
 
   return (
-    <div className="flex items-center justify-center gap-2 sm:gap-0">
+    <div className="flex items-center justify-center gap-2 pb-4 sm:gap-0">
       {isEditable && (
         <Button
           size="sm"
           color="danger"
           variant="solid"
           onClick={onDecrement}
-          className={`hidden items-center rounded-l-full bg-red-600 text-slate-100 sm:flex ${current.button}`}
+          className={`items-center rounded-l-full bg-red-600 text-slate-100 sm:hidden ${current.button}`}
           aria-label="Decrease count"
         >
           <CircleMinus size={size === "lg" ? 28 : 17} />
         </Button>
       )}
 
-      <input
-        type="number"
-        value={value ?? ""}
-        onChange={onChange}
-        className={`appearance-none bg-transparent text-center outline-none [-moz-appearance:_textfield] focus:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none ${current.input}`}
-        min="0"
-        disabled={!isEditable}
-        placeholder="0"
-        aria-label="attendance count"
-      />
+      {isEditable && (
+        <input
+          type="number"
+          value={value ?? ""}
+          onChange={onChange}
+          className={`appearance-none bg-transparent text-center outline-none [-moz-appearance:_textfield] focus:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none ${current.input}`}
+          min="0"
+          disabled={!isEditable}
+          placeholder="0"
+          aria-label="attendance count"
+        />
+      )}
 
       {isEditable && (
         <Button
@@ -68,7 +70,7 @@ const AttendanceInputGroup: React.FC<AttendanceInputGroupProps> = ({
           color="primary"
           variant="solid"
           onClick={onIncrement}
-          className={`hidden items-center rounded-r-full bg-blue-600 text-slate-100 sm:flex ${current.button}`}
+          className={`sm:hiddenitems-center rounded-r-full bg-blue-600 text-slate-100 ${current.button}`}
           aria-label="Increase count"
         >
           <CirclePlus size={size === "lg" ? 28 : 17} />

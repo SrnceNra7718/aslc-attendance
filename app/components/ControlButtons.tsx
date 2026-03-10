@@ -16,7 +16,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   onCancel,
   onSubmit,
 }) => (
-  <div className="absolute right-0 top-16 flex gap-2 max-sm:top-[4.5rem] sm:right-3 sm:top-20">
+  <div className="absolute right-0 top-[0.5rem] flex gap-2 sm:right-3 sm:top-[1rem]">
     {isHovered && !isEditable && (
       <CustomButton
         iconType="pencil"
