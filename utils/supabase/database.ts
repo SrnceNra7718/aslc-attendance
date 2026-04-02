@@ -96,6 +96,7 @@ export const insertAttendance = async (
   deaf: number,
   total: number,
   meetingType: string,
+  remarks?: string | null,
 ) => {
   const { error } = await supabase.from("attendance").insert([
     {
@@ -104,6 +105,7 @@ export const insertAttendance = async (
       deaf: deaf,
       total: total,
       meeting_type: meetingType,
+      remarks: remarks,
     },
   ]);
 
@@ -126,6 +128,7 @@ export const updateAttendance = async (
   deaf: number,
   total: number,
   meetingType: string,
+  remarks?: string | null,
 ) => {
   const { error } = await supabase
     .from("attendance")
@@ -134,6 +137,7 @@ export const updateAttendance = async (
       deaf: deaf,
       total: total,
       meeting_type: meetingType,
+      remarks: remarks,
     })
     .eq("date_mm_dd_yyyy", formattedDate);
 

@@ -5,6 +5,7 @@ export interface AttendanceRecord {
   deaf: number;
   hearing: number;
   total: number;
+  remarks?: string | null;
 }
 
 export interface MonthlyAttendance {
