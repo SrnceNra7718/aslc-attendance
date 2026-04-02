@@ -17,7 +17,6 @@ type AttendanceRecord = {
   hearing: number | null;
   deaf: number | null;
   date_mm_dd_yyyy: string;
-  // remarks?: string | null;
 };
 
 type MeetingType = "Midweek" | "Weekend";
@@ -29,8 +28,6 @@ export default function AttendanceForm() {
   const [hValue, setHValue] = useState<number | null>(null);
   const [originalDValue, setOriginalDValue] = useState<number | null>(0);
   const [originalHValue, setOriginalHValue] = useState<number | null>(0);
-  const [remarks, setRemarks] = useState<string>("");
-  const [originalRemarks, setOriginalRemarks] = useState<string>("");
   const [existingAttendance, setExistingAttendance] = useState<
     AttendanceRecord[] | null
   >(null);
@@ -55,22 +52,9 @@ export default function AttendanceForm() {
     [dValue, hValue],
   );
   const hasChanges = useMemo(
-    () =>
-      hValue !== originalHValue ||
-      dValue !== originalDValue ||
-      remarks !== originalRemarks,
-    [hValue, dValue, originalHValue, originalDValue, remarks, originalRemarks],
+    () => hValue !== originalHValue || dValue !== originalDValue,
+    [hValue, dValue, originalHValue, originalDValue],
   );
-
-  // Display meeting info with remarks override
-  const displayMeetingInfo = useMemo(() => {
-    if (remarks === "CO's visit") {
-      return `CO's visit meeting – ${nextMeetingDate}`;
-    } else if (remarks === "Memorial") {
-      return `Memorial Meeting – ${nextMeetingDate}`;
-    }
-    return meetingInfo;
-  }, [remarks, nextMeetingDate, meetingInfo]);
 
   // Calculate meeting information
   useEffect(() => {
@@ -133,13 +117,11 @@ export default function AttendanceForm() {
 
       const attendance = await checkExistingAttendance(nextMeetingDate);
       if (attendance?.length) {
-        const { hearing, deaf, remarks: existingRemarks } = attendance[0];
+        const { hearing, deaf } = attendance[0];
         setDValue(deaf);
         setHValue(hearing);
-        setRemarks(existingRemarks || "");
         setOriginalDValue(deaf);
         setOriginalHValue(hearing);
-        setOriginalRemarks(existingRemarks || "");
       } else {
         resetValues();
       }
@@ -152,17 +134,11 @@ export default function AttendanceForm() {
       );
 
       if (updatedRecord) {
-        const {
-          hearing,
-          deaf,
-          // remarks: updatedRemarks
-        } = updatedRecord;
+        const { hearing, deaf } = updatedRecord;
         setDValue(deaf);
         setHValue(hearing);
-        // setRemarks(updatedRemarks || "");
         setOriginalDValue(deaf);
         setOriginalHValue(hearing);
-        // setOriginalRemarks(updatedRemarks || "");
         setExistingAttendance([updatedRecord]);
       } else {
         resetValues();
@@ -178,10 +154,8 @@ export default function AttendanceForm() {
   const resetValues = () => {
     setDValue(null);
     setHValue(null);
-    setRemarks("");
     setOriginalDValue(null);
     setOriginalHValue(null);
-    setOriginalRemarks("");
     setExistingAttendance([]);
   };
 
@@ -211,10 +185,9 @@ export default function AttendanceForm() {
     setIsHovered(true);
     setDValue(originalDValue);
     setHValue(originalHValue);
-    setRemarks(originalRemarks);
     setInputDate("");
     setIsEditable(false);
-  }, [originalDValue, originalHValue, originalRemarks]);
+  }, [originalDValue, originalHValue]);
 
   const handleValueChange = useCallback(
     (
@@ -256,7 +229,6 @@ export default function AttendanceForm() {
           deaf,
           total,
           meetingType,
-          // remarks, // pass remarks
         );
         showLogMessage("Attendance updated successfully.");
       } else {
@@ -266,14 +238,12 @@ export default function AttendanceForm() {
           deaf,
           total,
           meetingType,
-          // remarks, // pass remarks
         );
         showLogMessage("New attendance record inserted successfully.");
       }
 
       setOriginalDValue(deaf);
       setOriginalHValue(hearing);
-      setOriginalRemarks(remarks);
       setIsEditable(false);
     } catch (error) {
       showLogMessage(
@@ -287,7 +257,6 @@ export default function AttendanceForm() {
     totalValue,
     existingAttendance,
     meetingType,
-    remarks,
     hasChanges,
   ]);
 
@@ -314,11 +283,11 @@ export default function AttendanceForm() {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <section
+      <button
+        type="button"
         className="flex justify-center text-center"
-        onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        aria-label="Attendance form"
+        onClick={() => setIsHovered((prev) => !prev)}
       >
         <div
           id="AttendanceForm"
@@ -326,7 +295,7 @@ export default function AttendanceForm() {
         >
           <MeetingInfo
             isEditable={isEditable}
-            meetingInfo={displayMeetingInfo}
+            meetingInfo={meetingInfo}
             meetingInfoPL={meetingInfoPL}
             inputDate={inputDate}
             setInputDate={setInputDate}
@@ -336,7 +305,7 @@ export default function AttendanceForm() {
           <div className="w-full flex-col items-center justify-center py-3 sm:flex">
             <div className="flex w-full items-center justify-center">
               <div className="flex-1 text-right text-[6vw]">Deaf</div>
-              <div className="flex w-10 items-center justify-center text-[6vw] md:w-16 lg:w-24">
+              <div className="w-10 text-center text-[6vw] md:w-16 lg:w-24">
                 =
               </div>
               <div className="-ml-5 flex flex-1 justify-start">
@@ -354,7 +323,7 @@ export default function AttendanceForm() {
             {/* Hearing row – hidden on mobile, shown on sm+ */}
             <div className="flex w-full items-center justify-center">
               <div className="flex-1 text-right text-[6vw]">Hearing</div>
-              <div className="flex w-10 items-center justify-center text-[6vw] md:w-16 lg:w-24">
+              <div className="w-10 text-center text-[6vw] md:w-16 lg:w-24">
                 =
               </div>
               <div className="-ml-5 flex flex-1 justify-start">
@@ -374,13 +343,11 @@ export default function AttendanceForm() {
           <div className="my-2 h-1 w-[60vw] bg-foreground"></div>
 
           {/* Total row – visible on all screens */}
-          <div className="ml-4 flex w-full items-center justify-center">
+          <div className="flex w-full items-center justify-center">
             <div className="flex-1 text-right text-[6vw]">Total</div>
-            <div className="flex w-10 items-center justify-center text-[6vw] md:w-16 lg:w-24">
-              =
-            </div>
-            <div className="flex flex-1 items-center justify-start text-[6vw]">
-              <div>{totalValue}</div>
+            <div className="w-10 text-center text-[6vw] md:w-16 lg:w-24">=</div>
+            <div className="-ml-5 flex flex-1 justify-start text-center text-[6vw]">
+              <div className="w-[16.5vw] max-w-[130px]">{totalValue}</div>
             </div>
           </div>
 
@@ -394,46 +361,7 @@ export default function AttendanceForm() {
         </div>
 
         <LogDisplay message={logMessage} isButtonClicked={isSaveClicked} />
-      </section>
-
-      {/* Remarks selector – Tailwind chips with toggle */}
-      {isEditable && (
-        <div className="m-4 flex w-full flex-wrap items-center justify-center gap-2">
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                setRemarks((prev) =>
-                  prev === "CO's visit" ? "" : "CO's visit",
-                )
-              }
-              className={`rounded-full px-[4vw] py-[1vw] transition-colors sm:text-[1rem] lg:text-[2rem] ${
-                remarks === "CO's visit"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-              }`}
-              aria-pressed={remarks === "CO's visit"}
-            >
-              CO's visit
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setRemarks((prev) => (prev === "Memorial" ? "" : "Memorial"))
-              }
-              className={`rounded-full px-[4vw] py-[1vw] transition-colors sm:text-[1rem] lg:text-[2rem] ${
-                remarks === "Memorial"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-              }`}
-              aria-pressed={remarks === "Memorial"}
-            >
-              Memorial
-            </button>
-          </div>
-        </div>
-      )}
-
+      </button>
       {/* Mobile‑only large counters – appear below the main form */}
       {isEditable && (
         <div className="mt-4 block w-full sm:hidden">
