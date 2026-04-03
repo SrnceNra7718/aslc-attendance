@@ -44,37 +44,37 @@ export const checkExistingAttendance = async (formattedDate: string) => {
 export const subscribeToAttendanceChanges = (
   callback: (updatedData: AttendanceRecord[]) => void,
 ) => {
-  const attendanceChannel = supabase
-    .channel("custom-attendance-channel")
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "attendance" },
-      async (payload) => {
-        console.log("Change received!", payload); // Log the payload (or use it in your application logic)
+  const channelName = `custom-attendance-channel-${Date.now()}`;
+  const attendanceChannel = supabase.channel(channelName);
+  attendanceChannel.on(
+    "postgres_changes",
+    { event: "*", schema: "public", table: "attendance" },
+    async (payload) => {
+      console.log("Change received!", payload); // Log the payload (or use it in your application logic)
 
-        try {
-          // Fetch all data from the "attendance" table after any change occurs
-          const { data, error } = await supabase
-            .from("attendance")
-            .select("*")
-            .order("date_mm_dd_yyyy", { ascending: true });
+      try {
+        // Fetch all data from the "attendance" table after any change occurs
+        const { data, error } = await supabase
+          .from("attendance")
+          .select("*")
+          .order("date_mm_dd_yyyy", { ascending: true });
 
-          if (error) {
-            console.error("Error fetching updated attendance data:", error);
-            return;
-          }
-
-          // Ensure data conforms to the AttendanceRecord type
-          const typedData = data as AttendanceRecord[];
-
-          // Pass the updated data to the callback
-          callback(typedData);
-        } catch (err) {
-          console.error("Error handling database changes:", err);
+        if (error) {
+          console.error("Error fetching updated attendance data:", error);
+          return;
         }
-      },
-    )
-    .subscribe();
+
+        // Ensure data conforms to the AttendanceRecord type
+        const typedData = data as AttendanceRecord[];
+
+        // Pass the updated data to the callback
+        callback(typedData);
+      } catch (err) {
+        console.error("Error handling database changes:", err);
+      }
+    },
+  );
+  attendanceChannel.subscribe();
 
   // Return a cleanup function to unsubscribe from the channel
   return () => {

@@ -26,7 +26,7 @@
     "next-themes": "^0.3.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "xlsx": "^0.18.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz",
     "xlsx-js-style": "^1.2.0"
   },
   "devDependencies": {
