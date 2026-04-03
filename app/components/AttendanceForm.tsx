@@ -13,7 +13,7 @@ import ControlButtons from "./ControlButtons";
 import AttendanceInputGroupMobile from "./AttendanceInputGroupMobile";
 import { AttendanceRecord } from "./types/attendanceTypes";
 
-type MeetingType = "Midweek" | "Weekend" | "CO's visit" | "Memorial";
+type MeetingType = "Midweek" | "Weekend";
 
 export default function AttendanceForm() {
   // State management
@@ -22,8 +22,8 @@ export default function AttendanceForm() {
   const [hValue, setHValue] = useState<number | null>(null);
   const [originalDValue, setOriginalDValue] = useState<number | null>(0);
   const [originalHValue, setOriginalHValue] = useState<number | null>(0);
-  const [remarks, setRemarks] = useState<string>("");
-  const [originalRemarks, setOriginalRemarks] = useState<string>("");
+  const [remarks, setRemarks] = useState<string | null>();
+  const [originalRemarks, setOriginalRemarks] = useState<string | null>();
   const [existingAttendance, setExistingAttendance] = useState<
     AttendanceRecord[] | null
   >(null);
@@ -81,37 +81,44 @@ export default function AttendanceForm() {
       return nextMeetingDate;
     };
 
-    let nextMeetingDateObj: Date;
+    let nextMeetingDateObj: Date = new Date(today);
     let type: MeetingType = "Midweek";
 
     // Special remarks override: use today's actual date, independent of inputDate
-    if (remarks === "CO's visit") {
-      type = "CO's visit";
+    if (remarks === "CO's visit" || remarks === "Memorial") {
       nextMeetingDateObj = new Date(); // always current date
-    } else if (remarks === "Memorial") {
-      type = "Memorial";
-      nextMeetingDateObj = new Date(); // always current date
+      const meetingDay = nextMeetingDateObj.getDay();
+      if (meetingDay === 0 || meetingDay === 6) {
+        type = "Weekend";
+      }
     } else {
       // Normal schedule – use the memoized 'today' (which may be from inputDate)
-      nextMeetingDateObj = new Date(today);
       switch (currentDay) {
         case 0: // Sunday
-          type = "Weekend";
           break;
         case 1: // Monday
           nextMeetingDateObj = getNextMeetingDate(3); // Wednesday
           break;
         case 2: // Tuesday
+          nextMeetingDateObj = getNextMeetingDate(3); // Wednesday
+
           break;
         case 3: // Wednesday
           break;
         case 6: // Saturday
           type = "Weekend";
+          nextMeetingDateObj = getNextMeetingDate(0); // Sunday
+
           break;
         case 4: // Thursday
+          type = "Weekend";
+          nextMeetingDateObj = getNextMeetingDate(0); // Sunday
+
+          break;
         case 5: // Friday
           type = "Weekend";
           nextMeetingDateObj = getNextMeetingDate(0); // Sunday
+
           break;
       }
     }
@@ -137,18 +144,15 @@ export default function AttendanceForm() {
         setOriginalDValue(deaf);
         setOriginalHValue(hearing);
         setOriginalRemarks(existingRemarks || "");
+      } else if (remarks === "CO's visit" || remarks === "Memorial") {
+        // Only reset attendance values, keep the remarks
+        setDValue(null);
+        setHValue(null);
+        setOriginalDValue(null);
+        setOriginalHValue(null);
+        setExistingAttendance([]);
       } else {
-        // Don't reset remarks if we're in a special remarks mode
-        if (remarks !== "CO's visit" && remarks !== "Memorial") {
-          resetValues();
-        } else {
-          // Only reset attendance values, keep the remarks
-          setDValue(null);
-          setHValue(null);
-          setOriginalDValue(null);
-          setOriginalHValue(null);
-          setExistingAttendance([]);
-        }
+        resetValues();
       }
       setExistingAttendance(attendance);
     };
@@ -167,17 +171,15 @@ export default function AttendanceForm() {
         setOriginalHValue(hearing);
         setOriginalRemarks(updatedRemarks || "");
         setExistingAttendance([updatedRecord]);
+      } else if (remarks === "CO's visit" || remarks === "Memorial") {
+        // Only reset attendance values, keep the remarks
+        setDValue(null);
+        setHValue(null);
+        setOriginalDValue(null);
+        setOriginalHValue(null);
+        setExistingAttendance([]);
       } else {
-        // Don't reset remarks if we're in a special remarks mode
-        if (remarks !== "CO's visit" && remarks !== "Memorial") {
-          resetValues();
-        } else {
-          setDValue(null);
-          setHValue(null);
-          setOriginalDValue(null);
-          setOriginalHValue(null);
-          setExistingAttendance([]);
-        }
+        resetValues();
       }
       showLogMessage("Received updated attendance count");
     });
@@ -416,7 +418,7 @@ export default function AttendanceForm() {
               type="button"
               onClick={() =>
                 setRemarks((prev) =>
-                  prev === "CO's visit" ? "" : "CO's visit",
+                  prev === "CO's visit" ? null : "CO's visit",
                 )
               }
               className={`rounded-full px-[4vw] py-[1vw] transition-colors sm:text-[1rem] lg:text-[2rem] ${
@@ -431,7 +433,7 @@ export default function AttendanceForm() {
             <button
               type="button"
               onClick={() =>
-                setRemarks((prev) => (prev === "Memorial" ? "" : "Memorial"))
+                setRemarks((prev) => (prev === "Memorial" ? null : "Memorial"))
               }
               className={`rounded-full px-[4vw] py-[1vw] transition-colors sm:text-[1rem] lg:text-[2rem] ${
                 remarks === "Memorial"

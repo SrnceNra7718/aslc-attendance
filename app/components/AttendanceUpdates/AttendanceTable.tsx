@@ -76,7 +76,6 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   // Define table columns
   const columns = [
     { key: "date_mm_dd_yyyy", label: "Date" },
-    { key: "meeting_type", label: "Meeting Type" },
     { key: "deaf", label: "Deaf" },
     { key: "hearing", label: "Hearing" },
     { key: "total", label: "Total" },
@@ -196,8 +195,10 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
               <TableBody>
                 {monthData.midWeek.map((item) => (
                   <TableRow key={item.date_mm_dd_yyyy}>
-                    <TableCell>{item.date_mm_dd_yyyy ?? "N/A"}</TableCell>
-                    <TableCell>{item.meeting_type ?? "N/A"}</TableCell>
+                    <TableCell>
+                      {item.date_mm_dd_yyyy ?? "N/A"}{" "}
+                      {item.remarks ? `(${item.remarks})` : ""}
+                    </TableCell>
                     <TableCell>
                       {editingRow === item.date_mm_dd_yyyy ? (
                         <Input
@@ -322,7 +323,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                         </div>
                         <div className={mobileTableVal}>
                           {/* <span className="font-bold md:hidden">Date: </span> */}
-                          {item.date_mm_dd_yyyy ?? "N/A"}
+                          {item.date_mm_dd_yyyy ?? "N/A"}{" "}
+                          {item.remarks ? `(${item.remarks})` : ""}
                         </div>
                       </div>
                     </TableCell>
@@ -449,8 +451,10 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
               <TableBody>
                 {monthData.weekend.map((item) => (
                   <TableRow key={item.date_mm_dd_yyyy}>
-                    <TableCell>{item.date_mm_dd_yyyy ?? "N/A"}</TableCell>
-                    <TableCell>{item.meeting_type ?? "N/A"}</TableCell>
+                    <TableCell>
+                      {item.date_mm_dd_yyyy ?? "N/A"}{" "}
+                      {item.remarks ? `(${item.remarks})` : ""}
+                    </TableCell>
                     <TableCell>
                       {editingRow === item.date_mm_dd_yyyy ? (
                         <Input
@@ -574,7 +578,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                         </div>
                         <div className={mobileTableVal}>
                           {/* <span className="font-bold md:hidden">Date: </span> */}
-                          {item.date_mm_dd_yyyy ?? "N/A"}
+                          {item.date_mm_dd_yyyy ?? "N/A"}{" "}
+                          {item.remarks ? `(${item.remarks})` : ""}
                         </div>
                       </div>
                     </TableCell>
