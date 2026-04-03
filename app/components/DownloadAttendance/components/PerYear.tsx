@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { MonthlyAttendance } from "../../types/attendanceTypes";
 import { fetchLatestAttendance } from "@/utils/supabase/database";
 import { sortingMonthlyAttendanceData } from "../functions/DownloadAttendanceUtils";
-import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
+import { Autocomplete, AutocompleteItem, Button } from "@heroui/react";
 import XLSX, { ExcelDataType } from "xlsx-js-style"; // Use xlsx-js-style for styling support
 
 import {
@@ -443,7 +443,7 @@ export const PerYear: React.FC<PerYearProps> = ({ months, years }) => {
           <Button
             color="primary"
             size="md"
-            onClick={handleYearlyDownloadButtonClick}
+            onPress={handleYearlyDownloadButtonClick}
           >
             Download
           </Button>

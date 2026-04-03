@@ -1,10 +1,10 @@
 import type { Config } from "tailwindcss";
-import { nextui } from "@nextui-org/react";
+import { heroui } from "@heroui/react";
 
 const config = {
   darkMode: ["class"],
   content: [
-    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
@@ -23,7 +23,6 @@ const config = {
       scale: {
         25: "0.40",
       },
-
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -80,11 +79,7 @@ const config = {
       },
     },
   },
-  plugins: [
-    require("tailwindcss-animate"),
-    "prettier-plugin-tailwindcss",
-    nextui(),
-  ],
+  plugins: [require("tailwindcss-animate"), heroui()],
 } satisfies Config;
 
 export default config;

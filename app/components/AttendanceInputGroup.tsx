@@ -1,6 +1,6 @@
 // AttendanceInputGroup.tsx (updated)
 import React from "react";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { CircleMinus, CirclePlus } from "lucide-react";
 
 interface AttendanceInputGroupProps {
@@ -43,7 +43,7 @@ const AttendanceInputGroup: React.FC<AttendanceInputGroupProps> = ({
           size="sm"
           color="danger"
           variant="solid"
-          onClick={onDecrement}
+          onPress={onDecrement}
           className={`hidden items-center rounded-l-full bg-red-600 text-slate-100 sm:flex ${current.button}`}
           aria-label="Decrease count"
         >
@@ -67,7 +67,7 @@ const AttendanceInputGroup: React.FC<AttendanceInputGroupProps> = ({
           size="sm"
           color="primary"
           variant="solid"
-          onClick={onIncrement}
+          onPress={onIncrement}
           className={`hidden items-center rounded-r-full bg-blue-600 text-slate-100 sm:flex ${current.button}`}
           aria-label="Increase count"
         >

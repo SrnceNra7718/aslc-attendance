@@ -1,8 +1,17 @@
 // app/providers.tsx
 "use client";
 
-import { NextUIProvider } from "@nextui-org/react";
+import { HeroUIProvider } from "@heroui/react";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 
-export function Providers({ children }: { children: React.ReactNode }) {
-  return <NextUIProvider>{children}</NextUIProvider>;
+export function Providers({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <HeroUIProvider>
+      <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
+        {children}
+      </NextThemesProvider>
+    </HeroUIProvider>
+  );
 }

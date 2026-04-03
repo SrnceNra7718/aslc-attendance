@@ -1,6 +1,6 @@
 // CustomButton.tsx
 import React, { useState } from "react";
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { Ban, Pencil, Save } from "lucide-react"; // Import the icons
 
 interface CustomButtonProps {
@@ -42,7 +42,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
         } ${className}`} // Responsive scaling for different screen sizes
         onMouseEnter={() => setIsHovered(true)} // Track hover state
         onMouseLeave={() => setIsHovered(false)} // Reset hover state
-        onClick={onClick} // Handle click
+        onPress={onClick} // Handle click
       >
         {renderIcon()}
         {isHovered && (

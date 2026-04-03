@@ -1,6 +1,6 @@
 "use client";
 
-import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { Autocomplete, AutocompleteItem } from "@heroui/react";
 import React, { useEffect, useState } from "react";
 import {
   getMonthAndYearFromDate,

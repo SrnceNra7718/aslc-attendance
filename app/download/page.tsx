@@ -1,6 +1,6 @@
 import { AttendanceUpdates } from "../components/AttendanceUpdates/AttendanceUpdates";
 import { DownloadAttendancePage } from "../components/DownloadAttendance/DownloadAttendancePage";
-import { Divider } from "@nextui-org/divider";
+import { Divider } from "@heroui/divider";
 
 export default async function Page() {
   return (

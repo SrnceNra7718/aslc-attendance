@@ -11,7 +11,7 @@ import {
   TableCell,
   Input,
   Spinner, // Import Spinner for the loading indicator
-} from "@nextui-org/react";
+} from "@heroui/react";
 import LogDisplay from "../ui/LogDisplay";
 import {
   groupAttendanceByMonth,

@@ -1,5 +1,5 @@
 // Updated PerRange.tsx
-import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
+import { Autocomplete, AutocompleteItem, Button } from "@heroui/react";
 import React, { useState } from "react";
 import { fetchLatestAttendance } from "@/utils/supabase/database";
 import { sortingMonthlyAttendanceData } from "../functions/DownloadAttendanceUtils";
@@ -545,7 +545,7 @@ export const PerRange: React.FC<PerRangeProps> = ({ months, years }) => {
         <Button
           color="primary"
           size="md"
-          onClick={handlePerRangeDownloadButtonClick}
+          onPress={handlePerRangeDownloadButtonClick}
         >
           Download
         </Button>
