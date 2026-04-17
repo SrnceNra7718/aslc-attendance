@@ -81,49 +81,43 @@ export default function AttendanceForm() {
       return nextMeetingDate;
     };
 
-    let nextMeetingDateObj: Date = new Date(today);
-    let type: MeetingType = "Midweek";
+    let meetingDateObj: Date;
+    let type: MeetingType;
 
-    // Special remarks override: use today's actual date, independent of inputDate
+    // Special remarks override: use today's actual date
     if (remarks === "CO's visit" || remarks === "Memorial") {
-      nextMeetingDateObj = new Date(); // always current date
-      const meetingDay = nextMeetingDateObj.getDay();
-      if (meetingDay === 0 || meetingDay === 6) {
-        type = "Weekend";
-      }
+      meetingDateObj = new Date(); // always current date
+      const meetingDay = meetingDateObj.getDay();
+      type = meetingDay === 0 || meetingDay === 6 ? "Weekend" : "Midweek";
     } else {
-      // Normal schedule – use the memoized 'today' (which may be from inputDate)
+      // Normal schedule – determine the upcoming meeting date
       switch (currentDay) {
-        case 0: // Sunday
+        case 0: // Sunday – meeting is today
+          meetingDateObj = new Date(today);
           break;
-        case 1: // Monday
-          nextMeetingDateObj = getNextMeetingDate(3); // Wednesday
+        case 1: // Monday – next Wednesday
+          meetingDateObj = getNextMeetingDate(3);
           break;
-        case 2: // Tuesday
-          nextMeetingDateObj = getNextMeetingDate(3); // Wednesday
-
+        case 2: // Tuesday – next Wednesday
+          meetingDateObj = getNextMeetingDate(3);
           break;
-        case 3: // Wednesday
+        case 3: // Wednesday – meeting is today
+          meetingDateObj = new Date(today);
           break;
-        case 6: // Saturday
-          type = "Weekend";
-          nextMeetingDateObj = getNextMeetingDate(0); // Sunday
-
+        case 4: // Thursday – next Sunday
+        case 5: // Friday – next Sunday
+        case 6: // Saturday – next Sunday
+          meetingDateObj = getNextMeetingDate(0);
           break;
-        case 4: // Thursday
-          type = "Weekend";
-          nextMeetingDateObj = getNextMeetingDate(0); // Sunday
-
-          break;
-        case 5: // Friday
-          type = "Weekend";
-          nextMeetingDateObj = getNextMeetingDate(0); // Sunday
-
-          break;
+        default:
+          meetingDateObj = new Date(today);
       }
+
+      const meetingDay = meetingDateObj.getDay();
+      type = meetingDay === 0 || meetingDay === 6 ? "Weekend" : "Midweek";
     }
 
-    const formattedDate = formatDate(nextMeetingDateObj);
+    const formattedDate = formatDate(meetingDateObj);
     setMeetingType(type);
     setMeetingInfo(`${type} Meeting – ${formattedDate}`);
     setMeetingInfoPL(formattedDate);
@@ -186,7 +180,7 @@ export default function AttendanceForm() {
 
     fetchAttendance();
     return () => unsubscribe();
-  }, [nextMeetingDate, remarks]); // Add remarks to dependency
+  }, [nextMeetingDate, remarks]);
 
   // Helper functions
   const resetValues = () => {
