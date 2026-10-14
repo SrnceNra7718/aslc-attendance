@@ -6,24 +6,209 @@ import {
   subscribeToAttendanceChanges,
   updateAttendance,
 } from "@/utils/supabase/database";
+import { Minimize2, Maximize2, X } from "lucide-react";
 import LogDisplay from "./ui/LogDisplay";
 import MeetingInfo from "./MeetingInfo";
 import AttendanceInputGroup from "./AttendanceInputGroup";
 import ControlButtons from "./ControlButtons";
 import AttendanceInputGroupMobile from "./AttendanceInputGroupMobile";
+import PictureInPicture, { usePictureInPicture } from "./ui/PictureInPicture";
 import { AttendanceRecord } from "./types/attendanceTypes";
+import { Button } from "./ui/button";
 
 type MeetingType = "Midweek" | "Weekend";
 
-export default function AttendanceForm() {
+interface AttendanceFormProps {
+  initialInputDate?: string;
+  initialDValue?: number | null;
+  initialHValue?: number | null;
+  initialRemarks?: string | null;
+  isPiP?: boolean;
+  readOnly?: boolean;
+}
+
+interface FormContentProps {
+  isEditable: boolean;
+  isHovered: boolean;
+  displayMeetingInfo: string;
+  meetingInfoPL: string;
+  inputDate: string;
+  setInputDate: (date: string) => void;
+  dValue: number | null;
+  hValue: number | null;
+  setDValue: (value: number | null) => void;
+  setHValue: (value: number | null) => void;
+  totalValue: number;
+  remarks: string | null;
+  handleInputChange: (setValue: (value: number | null) => void) => (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleAddDeaf: () => void;
+  handleMinusDeaf: () => void;
+  handleAddHearing: () => void;
+  handleMinusHearing: () => void;
+  handleCancel: () => void;
+  handleSubmit: () => void;
+  logMessage: string;
+  isSaveClicked: boolean;
+  onEdit: () => void;
+  setRemarks: (remarks: string | null) => void;
+  pipWindow: Window | null;
+  openPiPWindow: (params: {
+    meetingInfo?: string;
+    inputDate?: string;
+    dValue?: number | null;
+    hValue?: number | null;
+    remarks?: string | null;
+  }) => void;
+  closePiPWindow: () => void;
+  readOnly: boolean;
+}
+
+function FormContent({
+  isEditable,
+  isHovered,
+  displayMeetingInfo,
+  meetingInfoPL,
+  inputDate,
+  setInputDate,
+  dValue,
+  hValue,
+  setDValue,
+  setHValue,
+  totalValue,
+  remarks,
+  handleInputChange,
+  handleAddDeaf,
+  handleMinusDeaf,
+  handleAddHearing,
+  handleMinusHearing,
+  handleCancel,
+  handleSubmit,
+  logMessage,
+  isSaveClicked,
+  onEdit,
+  setRemarks,
+  pipWindow,
+  openPiPWindow,
+  closePiPWindow,
+  readOnly,
+}: FormContentProps) {
+  return (
+    <>
+      <MeetingInfo
+        isEditable={isEditable}
+        meetingInfo={displayMeetingInfo}
+        meetingInfoPL={meetingInfoPL}
+        inputDate={inputDate}
+        setInputDate={setInputDate}
+      />
+
+      {/* PiP Toggle Button */}
+      {!readOnly && (
+        <div className="absolute top-4 right-4 z-10" suppressHydrationWarning>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => {
+              if (pipWindow) {
+                closePiPWindow();
+              } else {
+                openPiPWindow({
+                  meetingInfo: displayMeetingInfo,
+                  inputDate,
+                  dValue,
+                  hValue,
+                  remarks,
+                });
+              }
+            }}
+            aria-label={pipWindow ? "Exit Picture in Picture" : "Enter Picture in Picture"}
+            aria-pressed={!!pipWindow}
+          >
+            {pipWindow ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+          </Button>
+        </div>
+      )}
+
+      {/* Deaf row – hidden on mobile, shown on sm+ */}
+      <div className="w-full flex-col items-center justify-center py-3 sm:flex">
+        <div className="flex w-full items-center justify-center">
+          <div className="flex-1 text-right text-[6vw]">Deaf</div>
+          <div className="flex w-10 items-center justify-center text-[6vw] md:w-16 lg:w-24">
+            =
+          </div>
+          <div className="-ml-5 flex flex-1 justify-start">
+            <AttendanceInputGroup
+              value={dValue}
+              onChange={handleInputChange(setDValue)}
+              isEditable={isEditable}
+              onIncrement={handleAddDeaf}
+              onDecrement={handleMinusDeaf}
+              size="sm"
+            />
+          </div>
+        </div>
+
+        {/* Hearing row – hidden on mobile, shown on sm+ */}
+        <div className="flex w-full items-center justify-center">
+          <div className="flex-1 text-right text-[6vw]">Hearing</div>
+          <div className="flex w-10 items-center justify-center text-[6vw] md:w-16 lg:w-24">
+            =
+          </div>
+          <div className="-ml-5 flex flex-1 justify-start">
+            <AttendanceInputGroup
+              value={hValue}
+              onChange={handleInputChange(setHValue)}
+              isEditable={isEditable}
+              onIncrement={handleAddHearing}
+              onDecrement={handleMinusHearing}
+              size="sm"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Separator line */}
+      <div className="my-2 h-1 w-[60vw] bg-foreground"></div>
+
+      {/* Total row – visible on all screens */}
+      <div className="ml-4 flex w-full items-center justify-center">
+        <div className="flex-1 text-right text-[6vw]">Total</div>
+        <div className="flex w-10 items-center justify-center text-[6vw] md:w-16 lg:w-24">
+          =
+        </div>
+        <div className="flex flex-1 items-center justify-start text-[6vw]">
+          <div>{totalValue}</div>
+        </div>
+      </div>
+
+      <ControlButtons
+        isHovered={isHovered}
+        isEditable={isEditable}
+        onEdit={onEdit}
+        onCancel={handleCancel}
+        onSubmit={handleSubmit}
+      />
+    </>
+  );
+}
+
+export default function AttendanceForm({
+  initialInputDate,
+  initialDValue,
+  initialHValue,
+  initialRemarks,
+  isPiP = false,
+  readOnly = false,
+}: AttendanceFormProps) {
   // State management
-  const [inputDate, setInputDate] = useState<string>("");
-  const [dValue, setDValue] = useState<number | null>(null);
-  const [hValue, setHValue] = useState<number | null>(null);
-  const [originalDValue, setOriginalDValue] = useState<number | null>(0);
-  const [originalHValue, setOriginalHValue] = useState<number | null>(0);
-  const [remarks, setRemarks] = useState<string | null>();
-  const [originalRemarks, setOriginalRemarks] = useState<string | null>();
+  const [inputDate, setInputDate] = useState<string>(initialInputDate || "");
+  const [dValue, setDValue] = useState<number | null>(initialDValue ?? null);
+  const [hValue, setHValue] = useState<number | null>(initialHValue ?? null);
+  const [originalDValue, setOriginalDValue] = useState<number | null>(initialDValue ?? 0);
+  const [originalHValue, setOriginalHValue] = useState<number | null>(initialHValue ?? 0);
+  const [remarks, setRemarks] = useState<string | null>(initialRemarks ?? null);
+  const [originalRemarks, setOriginalRemarks] = useState<string | null>(initialRemarks ?? null);
   const [existingAttendance, setExistingAttendance] = useState<
     AttendanceRecord[] | null
   >(null);
@@ -32,9 +217,15 @@ export default function AttendanceForm() {
   const [meetingType, setMeetingType] = useState<MeetingType>("Midweek");
   const [nextMeetingDate, setNextMeetingDate] = useState<string>("");
   const [isHovered, setIsHovered] = useState(false);
-  const [isEditable, setIsEditable] = useState(false);
+  const [isEditable, setIsEditable] = useState<boolean>(!readOnly && false);
   const [logMessage, setLogMessage] = useState<string>("");
   const [isSaveClicked, setIsSaveClicked] = useState<boolean>(false);
+
+  const {
+    pipWindow,
+    openPiPWindow,
+    closePiPWindow,
+  } = usePictureInPicture();
 
   // Memoized values
   const today = useMemo<Date>(
@@ -330,74 +521,36 @@ export default function AttendanceForm() {
       >
         <div
           id="AttendanceForm"
-          className="flex aspect-[16/9] max-h-[90vw] w-screen max-w-[100vw] flex-col items-center justify-center border border-foreground bg-card p-6 text-foreground"
+          className="flex aspect-[16/9] max-h-[90vw] w-screen max-w-[100vw] flex-col items-center justify-center border border-foreground bg-card p-6 text-foreground relative"
         >
-          <MeetingInfo
+          <FormContent
             isEditable={isEditable}
-            meetingInfo={displayMeetingInfo}
+            isHovered={isHovered}
+            displayMeetingInfo={displayMeetingInfo}
             meetingInfoPL={meetingInfoPL}
             inputDate={inputDate}
             setInputDate={setInputDate}
-          />
-
-          {/* Deaf row – hidden on mobile, shown on sm+ */}
-          <div className="w-full flex-col items-center justify-center py-3 sm:flex">
-            <div className="flex w-full items-center justify-center">
-              <div className="flex-1 text-right text-[6vw]">Deaf</div>
-              <div className="flex w-10 items-center justify-center text-[6vw] md:w-16 lg:w-24">
-                =
-              </div>
-              <div className="-ml-5 flex flex-1 justify-start">
-                <AttendanceInputGroup
-                  value={dValue}
-                  onChange={handleInputChange(setDValue)}
-                  isEditable={isEditable}
-                  onIncrement={handleAddDeaf}
-                  onDecrement={handleMinusDeaf}
-                  size="sm"
-                />
-              </div>
-            </div>
-
-            {/* Hearing row – hidden on mobile, shown on sm+ */}
-            <div className="flex w-full items-center justify-center">
-              <div className="flex-1 text-right text-[6vw]">Hearing</div>
-              <div className="flex w-10 items-center justify-center text-[6vw] md:w-16 lg:w-24">
-                =
-              </div>
-              <div className="-ml-5 flex flex-1 justify-start">
-                <AttendanceInputGroup
-                  value={hValue}
-                  onChange={handleInputChange(setHValue)}
-                  isEditable={isEditable}
-                  onIncrement={handleAddHearing}
-                  onDecrement={handleMinusHearing}
-                  size="sm"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Separator line */}
-          <div className="my-2 h-1 w-[60vw] bg-foreground"></div>
-
-          {/* Total row – visible on all screens */}
-          <div className="ml-4 flex w-full items-center justify-center">
-            <div className="flex-1 text-right text-[6vw]">Total</div>
-            <div className="flex w-10 items-center justify-center text-[6vw] md:w-16 lg:w-24">
-              =
-            </div>
-            <div className="flex flex-1 items-center justify-start text-[6vw]">
-              <div>{totalValue}</div>
-            </div>
-          </div>
-
-          <ControlButtons
-            isHovered={isHovered}
-            isEditable={isEditable}
+            dValue={dValue}
+            hValue={hValue}
+            setDValue={setDValue}
+            setHValue={setHValue}
+            totalValue={totalValue}
+            remarks={remarks}
+            handleInputChange={handleInputChange}
+            handleAddDeaf={handleAddDeaf}
+            handleMinusDeaf={handleMinusDeaf}
+            handleAddHearing={handleAddHearing}
+            handleMinusHearing={handleMinusHearing}
+            handleCancel={handleCancel}
+            handleSubmit={handleSubmit}
+            logMessage={logMessage}
+            isSaveClicked={isSaveClicked}
             onEdit={() => setIsEditable(true)}
-            onCancel={handleCancel}
-            onSubmit={handleSubmit}
+            setRemarks={setRemarks}
+            pipWindow={pipWindow}
+            openPiPWindow={openPiPWindow}
+            closePiPWindow={closePiPWindow}
+            readOnly={readOnly}
           />
         </div>
 
