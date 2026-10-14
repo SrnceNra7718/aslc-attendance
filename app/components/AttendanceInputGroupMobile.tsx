@@ -54,7 +54,7 @@ const AttendanceInputGroup: React.FC<AttendanceInputGroupProps> = ({
       {isEditable && (
         <input
           type="number"
-          value={value ?? ""}
+          value={value != null && !Number.isNaN(value) ? value : ""}
           onChange={onChange}
           className={`appearance-none bg-transparent text-center outline-none [-moz-appearance:_textfield] focus:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none ${current.input}`}
           min="0"
