@@ -6,13 +6,13 @@ import {
   subscribeToAttendanceChanges,
   updateAttendance,
 } from "@/utils/supabase/database";
-import { Minimize2, Maximize2, X } from "lucide-react";
+import { Maximize2 } from "lucide-react";
 import LogDisplay from "./ui/LogDisplay";
 import MeetingInfo from "./MeetingInfo";
 import AttendanceInputGroup from "./AttendanceInputGroup";
 import ControlButtons from "./ControlButtons";
 import AttendanceInputGroupMobile from "./AttendanceInputGroupMobile";
-import PictureInPicture, { usePictureInPicture } from "./ui/PictureInPicture";
+import { useFullscreen } from "./ui/useFullscreen";
 import { AttendanceRecord } from "./types/attendanceTypes";
 import { Button } from "./ui/button";
 
@@ -23,7 +23,6 @@ interface AttendanceFormProps {
   initialDValue?: number | null;
   initialHValue?: number | null;
   initialRemarks?: string | null;
-  isPiP?: boolean;
   readOnly?: boolean;
 }
 
@@ -40,7 +39,9 @@ interface FormContentProps {
   setHValue: (value: number | null) => void;
   totalValue: number;
   remarks: string | null;
-  handleInputChange: (setValue: (value: number | null) => void) => (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleInputChange: (
+    setValue: (value: number | null) => void,
+  ) => (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleAddDeaf: () => void;
   handleMinusDeaf: () => void;
   handleAddHearing: () => void;
@@ -51,16 +52,9 @@ interface FormContentProps {
   isSaveClicked: boolean;
   onEdit: () => void;
   setRemarks: (remarks: string | null) => void;
-  pipWindow: Window | null;
-  openPiPWindow: (params: {
-    meetingInfo?: string;
-    inputDate?: string;
-    dValue?: number | null;
-    hValue?: number | null;
-    remarks?: string | null;
-  }) => void;
-  closePiPWindow: () => void;
+  onEnterFullscreen: () => void;
   readOnly: boolean;
+  displayOnly: boolean;
 }
 
 function FormContent({
@@ -87,10 +81,9 @@ function FormContent({
   isSaveClicked,
   onEdit,
   setRemarks,
-  pipWindow,
-  openPiPWindow,
-  closePiPWindow,
+  onEnterFullscreen,
   readOnly,
+  displayOnly,
 }: FormContentProps) {
   return (
     <>
@@ -102,35 +95,22 @@ function FormContent({
         setInputDate={setInputDate}
       />
 
-      {/* PiP Toggle Button */}
-      {!readOnly && (
-        <div className="absolute top-4 right-4 z-10" suppressHydrationWarning>
+      {/* Enter-fullscreen button — hidden once in fullscreen */}
+      {!readOnly && !displayOnly && (
+        <div className="absolute left-4 top-4 z-10" suppressHydrationWarning>
           <Button
             variant="outline"
             size="icon"
             className="h-8 w-8"
-            onClick={() => {
-              if (pipWindow) {
-                closePiPWindow();
-              } else {
-                openPiPWindow({
-                  meetingInfo: displayMeetingInfo,
-                  inputDate,
-                  dValue,
-                  hValue,
-                  remarks,
-                });
-              }
-            }}
-            aria-label={pipWindow ? "Exit Picture in Picture" : "Enter Picture in Picture"}
-            aria-pressed={!!pipWindow}
+            onClick={onEnterFullscreen}
+            aria-label="Enter full screen"
           >
-            {pipWindow ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+            <Maximize2 className="h-4 w-4" />
           </Button>
         </div>
       )}
 
-      {/* Deaf row – hidden on mobile, shown on sm+ */}
+      {/* Deaf row */}
       <div className="w-full flex-col items-center justify-center py-3 sm:flex">
         <div className="flex w-full items-center justify-center">
           <div className="flex-1 text-right text-[6vw]">Deaf</div>
@@ -149,7 +129,7 @@ function FormContent({
           </div>
         </div>
 
-        {/* Hearing row – hidden on mobile, shown on sm+ */}
+        {/* Hearing row */}
         <div className="flex w-full items-center justify-center">
           <div className="flex-1 text-right text-[6vw]">Hearing</div>
           <div className="flex w-10 items-center justify-center text-[6vw] md:w-16 lg:w-24">
@@ -171,7 +151,7 @@ function FormContent({
       {/* Separator line */}
       <div className="my-2 h-1 w-[60vw] bg-foreground"></div>
 
-      {/* Total row – visible on all screens */}
+      {/* Total row */}
       <div className="ml-4 flex w-full items-center justify-center">
         <div className="flex-1 text-right text-[6vw]">Total</div>
         <div className="flex w-10 items-center justify-center text-[6vw] md:w-16 lg:w-24">
@@ -182,13 +162,16 @@ function FormContent({
         </div>
       </div>
 
-      <ControlButtons
-        isHovered={isHovered}
-        isEditable={isEditable}
-        onEdit={onEdit}
-        onCancel={handleCancel}
-        onSubmit={handleSubmit}
-      />
+      {/* Footer controls — hidden in display-only (fullscreen) */}
+      {!displayOnly && (
+        <ControlButtons
+          isHovered={isHovered}
+          isEditable={isEditable}
+          onEdit={onEdit}
+          onCancel={handleCancel}
+          onSubmit={handleSubmit}
+        />
+      )}
     </>
   );
 }
@@ -198,17 +181,22 @@ export default function AttendanceForm({
   initialDValue,
   initialHValue,
   initialRemarks,
-  isPiP = false,
   readOnly = false,
 }: AttendanceFormProps) {
   // State management
   const [inputDate, setInputDate] = useState<string>(initialInputDate || "");
   const [dValue, setDValue] = useState<number | null>(initialDValue ?? null);
   const [hValue, setHValue] = useState<number | null>(initialHValue ?? null);
-  const [originalDValue, setOriginalDValue] = useState<number | null>(initialDValue ?? 0);
-  const [originalHValue, setOriginalHValue] = useState<number | null>(initialHValue ?? 0);
+  const [originalDValue, setOriginalDValue] = useState<number | null>(
+    initialDValue ?? 0,
+  );
+  const [originalHValue, setOriginalHValue] = useState<number | null>(
+    initialHValue ?? 0,
+  );
   const [remarks, setRemarks] = useState<string | null>(initialRemarks ?? null);
-  const [originalRemarks, setOriginalRemarks] = useState<string | null>(initialRemarks ?? null);
+  const [originalRemarks, setOriginalRemarks] = useState<string | null>(
+    initialRemarks ?? null,
+  );
   const [existingAttendance, setExistingAttendance] = useState<
     AttendanceRecord[] | null
   >(null);
@@ -221,11 +209,39 @@ export default function AttendanceForm({
   const [logMessage, setLogMessage] = useState<string>("");
   const [isSaveClicked, setIsSaveClicked] = useState<boolean>(false);
 
-  const {
-    pipWindow,
-    openPiPWindow,
-    closePiPWindow,
-  } = usePictureInPicture();
+  // Fullscreen (single window, no popup)
+  const { isFullscreen, enterFullscreen } = useFullscreen();
+
+  // Display-only = we are in fullscreen; the form is view-only and clean
+  const displayOnly = isFullscreen;
+
+  // Enter fullscreen (single action — exit is via Esc, handled by the hook)
+  const handleEnterFullscreen = useCallback(() => {
+    void enterFullscreen();
+  }, [enterFullscreen]);
+
+  // Lock scrolling while fullscreen (page has no scrollable area)
+  useEffect(() => {
+    if (!displayOnly) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      bodyOverflow: body.style.overflow,
+      htmlOverscroll: html.style.overscrollBehavior,
+      bodyOverscroll: body.style.overscrollBehavior,
+    };
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    body.style.overscrollBehavior = "none";
+    return () => {
+      html.style.overflow = prev.htmlOverflow;
+      body.style.overflow = prev.bodyOverflow;
+      html.style.overscrollBehavior = prev.htmlOverscroll;
+      body.style.overscrollBehavior = prev.bodyOverscroll;
+    };
+  }, [displayOnly]);
 
   // Memoized values
   const today = useMemo<Date>(
@@ -256,7 +272,7 @@ export default function AttendanceForm({
     return meetingInfo;
   }, [remarks, nextMeetingDate, meetingInfo]);
 
-  // Calculate meeting information – now depends on remarks
+  // Calculate meeting information
   useEffect(() => {
     const formatDate = (date: Date) => {
       const month = date.toLocaleString("default", { month: "long" });
@@ -275,29 +291,25 @@ export default function AttendanceForm({
     let meetingDateObj: Date;
     let type: MeetingType;
 
-    // Special remarks override: use today's actual date
     if (remarks === "CO's visit" || remarks === "Memorial") {
-      meetingDateObj = new Date(); // always current date
+      meetingDateObj = new Date();
       const meetingDay = meetingDateObj.getDay();
       type = meetingDay === 0 || meetingDay === 6 ? "Weekend" : "Midweek";
     } else {
-      // Normal schedule – determine the upcoming meeting date
       switch (currentDay) {
-        case 0: // Sunday – meeting is today
+        case 0:
           meetingDateObj = new Date(today);
           break;
-        case 1: // Monday – next Wednesday
+        case 1:
+        case 2:
           meetingDateObj = getNextMeetingDate(3);
           break;
-        case 2: // Tuesday – next Wednesday
-          meetingDateObj = getNextMeetingDate(3);
-          break;
-        case 3: // Wednesday – meeting is today
+        case 3:
           meetingDateObj = new Date(today);
           break;
-        case 4: // Thursday – next Sunday
-        case 5: // Friday – next Sunday
-        case 6: // Saturday – next Sunday
+        case 4:
+        case 5:
+        case 6:
           meetingDateObj = getNextMeetingDate(0);
           break;
         default:
@@ -330,7 +342,6 @@ export default function AttendanceForm({
         setOriginalHValue(hearing);
         setOriginalRemarks(existingRemarks || "");
       } else if (remarks === "CO's visit" || remarks === "Memorial") {
-        // Only reset attendance values, keep the remarks
         setDValue(null);
         setHValue(null);
         setOriginalDValue(null);
@@ -357,7 +368,6 @@ export default function AttendanceForm({
         setOriginalRemarks(updatedRemarks || "");
         setExistingAttendance([updatedRecord]);
       } else if (remarks === "CO's visit" || remarks === "Memorial") {
-        // Only reset attendance values, keep the remarks
         setDValue(null);
         setHValue(null);
         setOriginalDValue(null);
@@ -371,6 +381,7 @@ export default function AttendanceForm({
 
     fetchAttendance();
     return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nextMeetingDate, remarks]);
 
   // Helper functions
@@ -385,6 +396,7 @@ export default function AttendanceForm({
   };
 
   const showLogMessage = (message: string) => {
+    if (displayOnly || readOnly) return; // stays silent on the display
     setLogMessage(message);
     setIsSaveClicked(true);
     setTimeout(() => setIsSaveClicked(false), 1000);
@@ -476,7 +488,9 @@ export default function AttendanceForm({
       setIsEditable(false);
     } catch (error) {
       showLogMessage(
-        `Error during submission: ${error instanceof Error ? error.message : error}`,
+        `Error during submission: ${
+          error instanceof Error ? error.message : error
+        }`,
       );
     }
   }, [
@@ -511,17 +525,43 @@ export default function AttendanceForm({
     [handleValueChange],
   );
 
+  // In display-only, render a fixed, letterboxed 16:9 stage that fills the screen.
+  const stageStyle: React.CSSProperties | undefined = displayOnly
+    ? {
+        position: "fixed",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: "min(100vw, 177.7778vh)",
+        height: "min(56.25vw, 100vh)",
+        maxWidth: "100vw",
+        maxHeight: "100vh",
+        overflow: "hidden",
+      }
+    : undefined;
+
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div
+      className={`flex flex-col items-center justify-center ${
+        displayOnly ? "h-screen w-screen overflow-hidden bg-black" : ""
+      }`}
+    >
       <section
-        className="flex justify-center text-center"
+        className={`flex justify-center text-center ${
+          displayOnly ? "h-full w-full" : ""
+        }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         aria-label="Attendance form"
       >
         <div
           id="AttendanceForm"
-          className="flex aspect-[16/9] max-h-[90vw] w-screen max-w-[100vw] flex-col items-center justify-center border border-foreground bg-card p-6 text-foreground relative"
+          className={`relative flex flex-col items-center justify-center border border-foreground bg-card p-6 text-foreground ${
+            displayOnly
+              ? "overflow-hidden"
+              : "aspect-[16/9] max-h-[90vw] w-screen max-w-[100vw]"
+          }`}
+          style={stageStyle}
         >
           <FormContent
             isEditable={isEditable}
@@ -547,18 +587,20 @@ export default function AttendanceForm({
             isSaveClicked={isSaveClicked}
             onEdit={() => setIsEditable(true)}
             setRemarks={setRemarks}
-            pipWindow={pipWindow}
-            openPiPWindow={openPiPWindow}
-            closePiPWindow={closePiPWindow}
+            onEnterFullscreen={handleEnterFullscreen}
             readOnly={readOnly}
+            displayOnly={displayOnly}
           />
         </div>
 
-        <LogDisplay message={logMessage} isButtonClicked={isSaveClicked} />
+        {/* Log toast hidden during fullscreen */}
+        {!displayOnly && (
+          <LogDisplay message={logMessage} isButtonClicked={isSaveClicked} />
+        )}
       </section>
 
-      {/* Remarks selector – Tailwind chips with toggle */}
-      {isEditable && (
+      {/* Remarks selector — hidden during fullscreen */}
+      {isEditable && !displayOnly && (
         <div className="m-4 flex w-full flex-wrap items-center justify-center gap-2">
           <div className="flex flex-wrap gap-2">
             <button
@@ -595,11 +637,10 @@ export default function AttendanceForm({
         </div>
       )}
 
-      {/* Mobile‑only large counters – appear below the main form */}
-      {isEditable && (
+      {/* Mobile counters — hidden during fullscreen */}
+      {isEditable && !displayOnly && (
         <div className="mt-4 block w-full sm:hidden">
           <div className="flex flex-col items-center gap-6">
-            {/* Deaf counter */}
             <div className="flex w-full items-center justify-center gap-4">
               {isEditable && <span className="text-5xl font-bold">D</span>}
               <AttendanceInputGroupMobile
@@ -611,7 +652,6 @@ export default function AttendanceForm({
                 size="lg"
               />
             </div>
-            {/* Hearing counter */}
             <div className="flex w-full items-center justify-center gap-4">
               {isEditable && <span className="text-5xl font-bold">H</span>}
               <AttendanceInputGroupMobile
